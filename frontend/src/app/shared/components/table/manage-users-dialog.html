@@ -1,0 +1,91 @@
+
+<mat-dialog-content>
+  <div style="width: 100%" class="row f-s-12 justify-content-between wrapper-page-content">
+    <div class="col-sm-12">
+      <mat-card class="r-0">
+        <mat-card-content class="app-title-bar">
+          <h2 class="th2">Editer les données de l'utilisateur</h2>
+        </mat-card-content>
+        <mat-card-content>
+          <div class="app-form-wrapper">
+            <form (submit)="onConfirm()" [formGroup]="form!" appearance="outline">
+              <div class="app-input-label col-sm-12">
+                Nom & prénoms de l'utilisateur
+                <span style="color: red">*</span>
+              </div>
+              <div style="margin-bottom: 15px; width: 100%;" class="col-sm-12">
+                <input
+                  type="text"
+                  style="width: 100%; margin-bottom: 12px;"
+                  placeholder="Saisir le nom de l'utilisateur"
+                  class="m-r-8 r-1 f-s-12 justify-content-between"
+                  formControlName="name"
+                />
+              </div>
+              <div class="app-input-label col-sm-12">
+                Identifiant & numéro de téléphone
+                <span style="color: red">*</span>
+              </div>
+              <div style="margin-bottom: 15px" class="col-sm-12">
+                <input
+                  type="text"
+                  style="width: 100%; margin-bottom: 12px;"
+                  placeholder="Identifiant de l'utilisateur"
+                  class="m-r-8 r-1 f-s-12 justify-content-between"
+                  formControlName="username"
+                />
+                <input
+                  type="text"
+                  style="width: 100%; margin-bottom: 12px;"
+                  placeholder="Saisir le numéro de téléphone de l'utilisateur"
+                  class="m-r-8 r-1 f-s-12 justify-content-between"
+                  formControlName="phone"
+                />
+              </div>
+              <div class="col-sm-12">
+                <div class="app-input-label col-sm-12">
+                  Mot de passe
+                  <span style="color: red">*</span>
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    style="width: 100%; margin-bottom: 12px;"
+                    placeholder="Saisir le nouveau mot de passe"
+                    class="m-r-8 r-1 f-s-12 justify-content-between"
+                    formControlName="password"
+                  />
+                </div>
+              </div>
+              <div class="col-sm-12">
+                <div class="app-input-label col-sm-12">
+                  Role de l'utilisateur
+                  <span style="color: red">*</span>
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    style="width: 100%; margin-bottom: 12px;"
+                    class="m-r-8 r-1 f-s-12 justify-content-between"
+                    formControlName="role"
+                  />
+                </div>
+              </div>
+              <div class="col-sm-12" style="margin-top: 20px">
+                <button
+                  [style.cursor]="!enabledSubmit ? 'not-allowed' : 'pointer'"
+                  [disabled]="!enabledSubmit"
+                  type="submit"
+                  (click)="onConfirm()"
+                  class="search action-button"
+                >
+                  Mettre à jour
+                </button>
+              </div>
+            </form>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</mat-dialog-content>

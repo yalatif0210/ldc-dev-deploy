@@ -1,0 +1,95 @@
+.validation-table-wrapper {
+  width: 100%;
+  padding: 10px;
+  overflow-x: auto;
+  font-family: Arial, sans-serif;
+}
+
+.validation-table {
+  width: 100%;
+  min-width: 420px;
+  border-collapse: collapse;
+}
+
+.validation-table thead th {
+  padding: 10px 12px;
+  font-weight: 600;
+  color: #222;
+  text-align: left;
+  background: #f5f7fa;
+  border-bottom: 1px solid #e1e6ef;
+}
+
+.validation-table tbody td {
+  padding: 10px 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.validation-table .empty {
+  padding: 18px;
+  color: #666;
+  text-align: center;
+}
+
+.field-name {
+  font-weight: 500;
+}
+
+.field-note {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 6px 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: none;
+  border-radius: 0;
+}
+
+/* couleurs */
+.badge-valid {
+  color: #0f7a3a;
+  background-color: #e6f7ee;
+  border: 1px solid rgba(15, 122, 58, 0.12);
+}
+
+.badge-invalid {
+  color: #b32424;
+  background-color: #fff0f0;
+  border: 1px solid rgba(179, 36, 36, 0.12);
+}
+
+.badge-pending {
+  color: #8a6d00;
+  background-color: #fff8e6;
+  border: 1px solid rgba(138, 109, 0, 0.12);
+}
+
+/* responsive small screens */
+@media (width <= 520px) {
+  .validation-table thead {
+    display: none;
+  }
+
+  .validation-table tbody td {
+    display: block;
+    width: 100%;
+  }
+
+  .validation-table tbody tr {
+    display: block;
+    margin-bottom: 12px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+  }
+
+  .field-note {
+    font-size: 0.8rem;
+  }
+}

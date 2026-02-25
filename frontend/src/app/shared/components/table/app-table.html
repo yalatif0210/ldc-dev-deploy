@@ -1,0 +1,71 @@
+<!--<div class="row f-s-12 justify-content-between">
+  <div class="col-sm-12">
+    <ag-grid-angular
+      style="height: 500px; width: 100%"
+      [columnDefs]="datas.columns"
+      [defaultColDef]="defaultColDef"
+      [rowData]="datas.datas"
+      [pagination]="true"
+      [paginationPageSize]="itemsPerPage"
+      [paginationPageSizeSelector]="[10, 20, 50, 100]"
+    />
+  </div>
+</div>-->
+
+<div class="row f-s-12 justify-content-between">
+  <div class="col-sm-12">
+    <table class="table table-striped table-bordered table-hover">
+      <thead>
+        <tr>
+          @for(column of datas.columns; track $index) {
+          <th>{{ column.headerName }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for(row of datas.datas; track $index) {
+        <tr>
+          @for(column of datas.columns; track $index) { @if(column.field === specific_columns) {
+          <td>
+            <div class="col-sm-12" style="width: 100%">
+              <button style="width: 100%" (click)="onCellClicked(row[column.field])" class="search action-button">
+                Editer
+              </button>
+            </div>
+          </td>
+          } @if(column.field === init_report_action){
+          <td>
+            <div class="col-sm-12" style="width: 100%">
+              <button [style.cursor]="row[column.field]['isActive'] ? 'pointer' : 'not-allowed'" [disabled]="!row[column.field]['isActive']" style="width: 100%" (click)="onAction(row[column.field])" class="search action-button">
+                Initialiser le rapport
+              </button>
+            </div>
+          </td>
+          }@if(column.field === consulter_report_action){
+          <td>
+            <div class="col-sm-12" style="width: 100%">
+              <button  style="width: 100%" (click)="onConsulter(row[column.field])" class="search action-button">
+                Consulter le rapport
+              </button>
+            </div>
+          </td>
+          } @if(column.field !== init_report_action && column.field !== specific_columns && column.field !== consulter_report_action) {
+          <td>{{ row[column.field] }}</td>
+          } }
+        </tr>
+        }
+      </tbody>
+    </table>
+    @if (datas.datas.length) {
+    <div class="pagination">
+      <button (click)="changePage(-1)" [disabled]="page === 1">◀</button>
+      @for(item of arrayFromTotalPages; track $index){
+      <button (click)="setCurrentPage($index+1)" [className]="page === $index+1 ? 'active' : ''">
+        {{$index+1}}
+      </button>
+      }
+      <button (click)="changePage(1)" [disabled]="page === totalPages">▶</button>
+    </div>
+    }
+  </div>
+</div>

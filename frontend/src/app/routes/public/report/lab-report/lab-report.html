@@ -1,0 +1,306 @@
+<mat-card
+  class="r-0 f-s-12 justify-content-between"
+  style="margin-top: 12px; margin-left: -5px; margin-right: -5px"
+>
+  <mat-card-content style="margin-bottom: 20px">
+    <h2 class="th2">Rapport hebdomadaire laboratoire</h2>
+  </mat-card-content>
+  <mat-card-content>
+    <user-info-box />
+  </mat-card-content>
+  <mat-card-content>
+    <!-- 3D Hover Tabs -->
+    <div style="margin-top: 10px" class="tabs three-d-tabs">
+      @if(threeDTabs.length > 0){ @for(tab of threeDTabs; track $index){
+      <button
+        [class.active]="selectedThreeD === $index"
+        [class.inactive]="selectedThreeD !== $index"
+        [style.color]="selectedThreeD === $index ? 'white' : 'black'"
+        (click)="selectThreeD($index)"
+        class="tab-btn"
+      >
+        {{tab.label}}
+      </button>
+      } } @if(threeDTabs[selectedThreeD].content === 'lab'){
+      <div class="content">
+        @if(equipmentInfo.information.length){
+        <mat-card-content>
+          <div>
+            @if (transfer_mvt_out.length || transfer_mvt_in.length) {
+            <mtx-alert type="danger">
+              @if(transfer_mvt_out.length){
+              <span>
+                🚨 Important, ne pas tenir compte des échantillons transférés dans vos calculs :
+              </span>
+              @for (item of transfer_mvt_out; track $index) {
+              <span style="margin-left: 10px">
+                <b>* {{item.quantity}} unités de {{item.sanguineProduct.name}} *</b>
+                transférés out.
+              </span>
+              } } @if(transfer_mvt_in.length){
+              <span>🚨 Important, tenir compte des échantillons reçus dans vos calculs</span>
+              @for (item of transfer_mvt_in; track $index) {
+              <span style="margin-left: 10px">
+                <b>* {{item.quantity}} unités de {{item.sanguineProduct.name}} *</b>
+              </span>
+              } }
+            </mtx-alert>
+            }
+          </div>
+          <form [formGroup]="form!">
+            <div class="row-fluid" bis_skin_checked="1">
+              <select
+                id="rnrType"
+                class="span3 ng-pristine ng-valid app-select col-sm-4"
+                formControlName="information_unit"
+              >
+                <option option value="">Choisissez une unité d'information</option>
+                @for (item of equipmentInfo.information; track $index) {
+                <option value="{{item.name}}">💡 {{item.name}}</option>
+                }
+              </select>
+            </div>
+          </form>
+        </mat-card-content>
+        } @if(!equipmentInfo.information.length){
+        <mat-card-content style="margin-bottom: 20px">
+          <h2 class="th2">
+            💡 Onglet non disponible pour cet équipement. Voir l'onglet logistique.
+          </h2>
+        </mat-card-content>
+        } @if(information_unit_label){
+        <mat-card-content style="margin-bottom: 20px; margin-top: 40px">
+          <h2 class="th2">{{information_unit_label}}</h2>
+        </mat-card-content>
+        } @if(information_unit_label){
+        <form #form="ngForm">
+          <div style="overflow-x: auto; width: 100%">
+            <table>
+              <thead>
+                <tr>
+                  @for(item of information_unit.subUnits; track $index){
+                  <th style="text-align: center" [colSpan]="item.subSubUnits.length">
+                    {{item.name}}
+                  </th>
+                  }
+                </tr>
+                <tr>
+                  @for(subUnits of information_unit.subUnits; track $index){
+                  @if(subUnits.subSubUnits.length){ @for(sub of subUnits.subSubUnits; track $index){
+                  <th style="text-align: center">{{sub.name}}</th>
+                  } } }
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  @for(subUnits of information_unit.subUnits; track $index){
+                  @if(subUnits.subSubUnits.length){ @for(sub of subUnits.subSubUnits; track $index){
+                  <td style="text-align: center">
+                    <input
+                      [(ngModel)]="labInputs['unit_'+sub.id]"
+                      [ngModelOptions]="{standalone: true}"
+                      style="text-align: center; width: 90%"
+                      matInput
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                    />
+                  </td>
+                  } } @if(!subUnits.subSubUnits.length){
+                  <td style="text-align: center">
+                    @if(information_unit_label === SPECIFIC_INFORMATION_LABEL){
+                    <input
+                      matInput
+                      [defaultValue]="resloveDate(labInputs['unit_'+subUnits.id])"
+                      style="text-align: center"
+                      type="date"
+                      (change)="getMaintenanceDate(subUnits.id, $event)"
+                    />
+                    }@else {
+                    <input
+                      [(ngModel)]="labInputs['unit_'+subUnits.id]"
+                      [ngModelOptions]="{standalone: true}"
+                      matInput
+                      style="text-align: center"
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                    />
+                    }
+                  </td>
+                  } }
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </form>
+        }
+      </div>
+      }@if(threeDTabs[selectedThreeD].content === 'pharm'){
+      <div class="content">
+        <form #form="ngForm">
+          <div style="width: 100%; max-width: 1200px; min-height: 500px; margin: auto">
+            <table class="excel-table" style="width: 100%; table-layout: fixed">
+              <thead>
+                <tr>
+                  <th style="width: 5%">Id</th>
+                  <th style="width: 8%">Code</th>
+                  <th style="width: 51%">Désignation</th>
+                  <th style="width: 8%">Unité</th>
+                  <th style="width: 8%">Stock Initial</th>
+                  <th style="width: 9%">Quantité reçue</th>
+                  <th style="width: 8%">Quantité utilisée</th>
+                  <th style="width: 11%">Ajustement</th>
+                  <th style="width: 10%">Stock disponible</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (intrant of paginate(page); track $index) {
+                <tr
+                  [style.background-color]="isUserPharmUser ? '' : isPharmDataValid(intrant.id) ? '' : 'rgb(238, 183, 183)'"
+                >
+                  <td style="font-size: 10px">{{'i-'+intrant.id}}</td>
+                  @for (key of intrant_datas_keys; track $index) {
+                  <td
+                    style="font-size: 12px"
+                    [style.background]="($index > 2 && $index <6 && isUserPharmUser) ? '#f2f2f2': ''"
+                    [style.background]="!isUserPharmUser && !lastFinalizedReport && $index === 3 ? '#f2f2f2': ''"
+                  >
+                    @if ($index < 3) { {{intrant[key]}} } @if ($index === 3) { @if (isUserPharmUser)
+                    {
+                    <div></div>
+                    } @else {
+                    <input
+                      [(ngModel)]="pharmInputs['initial_qty_for_intrant_' + intrant.id]"
+                      (ngModelChange)="onPharmitemChange('initial_qty_for_intrant_' + intrant.id, $event)"
+                      style="text-align: center; width: 90%"
+                      matInput
+                      disabled
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      [ngModelOptions]="{standalone: true}"
+                    />
+
+                    } }@if ($index === 4) { @if (isUserPharmUser) {
+                    <div></div>
+                    } @else {
+                    <input
+                      [(ngModel)]="pharmInputs['entry_qty_for_intrant_' + intrant.id]"
+                      (ngModelChange)="onPharmitemChange('entry_qty_for_intrant_' + intrant.id, $event)"
+                      style="text-align: center; width: 90%"
+                      matInput
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      [ngModelOptions]="{standalone: true}"
+                    />
+
+                    } } @if ($index === 5) { @if(isUserPharmUser){
+                    <div></div>
+                    }@else {
+                    <input
+                      [(ngModel)]="pharmInputs['used_qty_for_intrant_' + intrant.id]"
+                      (ngModelChange)="onPharmitemChange('used_qty_for_intrant_' + intrant.id, $event)"
+                      style="text-align: center; width: 90%"
+                      matInput
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      [ngModelOptions]="{standalone: true}"
+                    />
+                    } } @if ($index === 6) { @if(isUserPharmUser){
+                    <div></div>
+                    }@else {
+                    <span class="adjustment">
+                      <div
+                        style="
+                          text-align: center;
+                          width: 70%;
+                          height: 20px;
+                          background-color: white;
+                        "
+                      >
+                        {{adjustments['somme_'+intrant.id] || 0}}
+                      </div>
+                      <button
+                        (click)="openAdjustmentDialog({index: intrant.id, target: intrant.name, adjustments})"
+                      >
+                        <span style="color: green; font-weight: bolder">+</span>
+                      </button>
+                    </span>
+                    } } @if ($index === 7) {
+                    <input
+                      [(ngModel)]="pharmInputs['instock_qty_for_intrant_'+intrant.id]"
+                      (ngModelChange)="onPharmitemChange('instock_qty_for_intrant_'+intrant.id, $event)"
+                      style="text-align: center; width: 90%"
+                      matInput
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      [ngModelOptions]="{standalone: true}"
+                    />
+                    }
+                  </td>
+                  }
+                </tr>
+                }
+              </tbody>
+            </table>
+            <div class="pagination">
+              <button (click)="changePage(-1)" [disabled]="page === 1">◀</button>
+              @for(item of arrayFromTotalPages; track $index){
+              <button
+                (click)="setCurrentPage($index+1)"
+                [className]="page === $index+1 ? 'active' : ''"
+              >
+                {{$index+1}}
+              </button>
+              }
+              <button (click)="changePage(1)" [disabled]="page === totalPages">▶</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      }
+    </div>
+  </mat-card-content>
+</mat-card>
+
+@if(information_unit_label || isUserPharmUser || equipmentId === 8){
+<div
+  style="
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 40px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 0.5rem;
+    padding: 13px;
+    background: rgba(0, 0, 0, 0.7);
+  "
+>
+  <div class="row">
+    <button
+      [style.cursor]="disable ? 'not-allowed' : 'pointer'"
+      [disabled]="disable"
+      (click)="onRegister(2)"
+      class="action-button"
+    >
+      Enregistrer
+    </button>
+    <button
+      [style.cursor]="disable ? 'not-allowed' : 'pointer'"
+      [disabled]="disable"
+      (click)="onRegister(4)"
+      class="action-button"
+    >
+      Transmettre
+    </button>
+  </div>
+</div>
+}

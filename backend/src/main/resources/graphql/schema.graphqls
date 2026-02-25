@@ -1,0 +1,665 @@
+#**************** *********** *******************#
+#**************** Entity type *******************#
+#**************** *********** *******************#
+
+type Region {
+    id: ID
+    name: String
+    districts: [District]
+}
+
+type SanguineProduct {
+    id: ID
+    name: String
+    transactions: [SanguineProductTransaction]
+}
+
+type SapNotification {
+    id: ID
+    createdAt: String
+    emitter: Structure
+    equipment: Equipment
+    intrant: Intrant
+    quantity: Int
+    isResolved: Boolean
+    isRejected: Boolean
+}
+
+type Transaction {
+    id: ID
+    createdAt: String
+    feedbackAt: String
+    origin: Structure
+    destination: Structure
+    equipment: Equipment
+    sanguineProductTransactions: [SanguineProductTransaction]
+    medicinesTransaction: [MedicinesTransaction]
+    approved: Boolean
+    isRejected: Boolean
+}
+
+type SanguineProductTransaction {
+    id: ID
+    transaction: Transaction
+    sanguineProduct: SanguineProduct
+    quantity: Int
+}
+
+type MedicinesTransaction {
+    id: ID
+    transaction: Transaction
+    intrant: Intrant
+    quantity: Int
+}
+
+type District {
+    id: ID
+    name: String
+    region: Region
+    structures: [Structure]
+}
+
+type Structure {
+    id: ID
+    name: String
+    active: Boolean
+    code: Int
+    district: District
+    accounts: [Account]
+    equipments: [Equipment]
+}
+
+type User {
+    id: ID
+    username: String
+    password: String
+    name: String
+    phone: String
+    account: Account
+}
+
+type Role {
+    id: ID
+    role: String
+}
+
+type Account {
+    id: ID
+    role: Role
+    user: User
+    structures: [Structure]
+    isActive: Boolean
+    reports: [Report]
+}
+
+type Status {
+    id: ID
+    status: String
+    reports: [Report]
+}
+
+type InformationUnit {
+    id: ID
+    name: String
+}
+
+type InformationSubUnit {
+    id: ID
+    name: String
+}
+
+type InformationSubSubUnit {
+    id: ID
+    name: String
+}
+
+type Equipment {
+    id: ID
+    name: String
+    structures: [Structure]
+    intrants: [Intrant]
+    informationList:[Information]
+    reports: [Report]
+}
+
+type Intrant {
+    id: ID
+    name: String
+    code: Int
+    sku: String
+    primary_sku: String
+    intrantType: IntrantType
+    equipment: Equipment
+    intrantMvtData: [IntrantMvtData]
+    medicinesTransaction: [MedicinesTransaction]
+    intrantCmmConfig: [IntrantCmmConfig]
+    convertionFactor: Float,
+    roundFactor: Float,
+    otherFactor: Float
+}
+
+type IntrantCmmConfig {
+    id: ID
+    structure: Structure
+    intrant: Intrant
+    equipment: Equipment
+    createdAt: String
+    cmm: Int
+}
+
+type IntrantType {
+    id: ID
+    name: String
+}
+
+type Information {
+    id: ID
+    informationUnit: InformationUnit
+    informationSubUnit: InformationSubUnit
+    informationSubSubUnit: InformationSubSubUnit
+    equipment: Equipment
+    labActivityData: [LabActivityData]
+}
+
+type Month {
+    id: ID
+    month: String
+    periods: [Period]
+}
+
+type Period {
+    id: ID
+    startDate: String
+    endDate: String
+    periodName: String
+    month: Month
+    reports: [Report]
+}
+
+type Report {
+    id: ID
+    period: Period
+    account: Account
+    status: Status
+    createdAt: String
+    labActivityData: [LabActivityData]
+    IntrantMvtData: [IntrantMvtData]
+    equipment: Equipment
+}
+
+type LabActivityData {
+    id: ID
+    report: Report
+    information: Information
+    value: Int
+}
+
+type IntrantMvtData {
+    id: ID
+    report: Report
+    intrant: Intrant
+    entryStock: Int
+    distributionStock: Int
+    availableStock: Int,
+    adjustments: [Adjustment]
+}
+
+type LoginAttempt {
+    id: ID
+    username: String
+    success: Boolean
+    createdAt: String
+}
+
+type Platform {
+    id: ID
+    structure: Structure
+    equipments: [Equipment]
+}
+
+type StructuredInformationSubUnit {
+    id: ID
+    name: String
+    subSubUnits: [InformationSubSubUnit]
+}
+
+type StructuredEquipmentInformation {
+    id: ID
+    name: String
+    subUnits: [StructuredInformationSubUnit]
+    intrants: [Intrant]
+}
+
+type EquipmentInformation {
+    intrants: [Intrant]
+    information: [StructuredEquipmentInformation]
+}
+
+type Synthesis {
+    id: ID,
+    item: String
+    synthesisType: SynthesisType
+    informationUnit: InformationUnit
+}
+
+type SynthesisType {
+    id: ID,
+    type: String
+}
+
+type Adjustment {
+    id: ID,
+    quantity: Int,
+    comment: String,
+    intrantMvtData: IntrantMvtData,
+    adjustmentType: AdjustmentType
+}
+
+type AdjustmentType {
+    id: ID,
+    name: String,
+    type: String,
+    adjustments: [Adjustment]
+}
+
+#************** ************* ********************#
+#************** Entity inputs ********************#
+#************** ************* ********************#
+
+input RegionInput {
+    name: String
+}
+
+input SanguineProductInput {
+    name: String
+}
+
+input TransactionInput {
+    origin_id: ID
+    destination_id: ID
+    equipment_id: ID
+    sanguine_product_transaction_input_list: [SanguineProductTransactionInput]
+    medicines_transaction_input_list: [MedicinesTransactionInput]
+}
+
+input SapNotificationInput {
+    emitter: ID
+    equipment: ID
+    quantity: Int
+}
+
+input MedicinesTransactionInput {
+    intrant_id: ID
+    quantity: Int
+}
+
+input SanguineProductTransactionInput {
+    sanguine_product_id: ID
+    quantity: Int
+}
+
+input TransactionByPeriodInput{
+    start_date: String
+    end_date: String
+}
+
+input DistrictInput {
+    name: String
+    regionId: ID
+}
+
+input StructureInput {
+    name: String
+    active: Boolean
+    code: Int
+    districtId: ID
+    equipmentsId: [ID]
+}
+
+input UserInput {
+    username: String
+    password: String
+    name: String
+    phone: String
+}
+
+input RoleInput {
+    role: String
+}
+
+input AccountInput {
+    userId: ID
+    roleId: ID
+    isActive: Boolean
+}
+
+input StatusInput {
+    status: String
+}
+
+input InformationUnitInput {
+    name: String
+}
+
+input InformationSubUnitInput {
+    name: String
+}
+
+input InformationSubSubUnitInput {
+    name: String
+}
+
+input EquipmentInput {
+    name: String
+}
+
+input IntrantInput {
+    name: String
+    code: Int
+    sku: String
+    intrantTypeId: ID
+    equipmentId: ID,
+    convertionFactor: Float,
+    roundFactor: Float,
+    otherFactor: Float
+}
+
+input UpdateIntrantInput {
+    id: ID
+    conversionFactor: Float,
+    roundFactor: Float,
+    otherFactor: Float,
+    sku: String,
+    primary_sku: String
+}
+
+input IntrantTypeInput {
+    name: String
+}
+
+input InformationInput {
+    informationUnitId: ID
+    informationSubUnitId: ID
+    informationSubSubId: ID
+    equipmentId: ID
+}
+
+input MonthInput {
+    month: String
+}
+
+input PeriodInput {
+    monthName: String
+    periodName: String
+    startDate: String
+    endData: String
+    monthId: ID
+}
+
+input ReportHistoryInput {
+    account_id: ID
+    equipment_id: ID
+    start_date: String
+    end_date: String
+    status_id: ID
+}
+
+input AdminReportHistoryInput {
+    supervised_structure_id: ID 
+    equipment_id: ID
+    start_date: String
+    end_date: String
+    status_id: ID
+}
+
+input ReportInput {
+    period_name: String
+    account_id: ID
+    status: ID
+    equipment_name: String
+}
+
+input LabActivityDataInput {
+    reportId: ID
+    informationId: ID
+    value: Int
+}
+
+input IntrantMvtDataInput {
+    reportId: ID
+    intrantId: ID
+    distributedStock: Int
+    availableStock: Int
+}
+
+input StructureFilterByRegionId {
+    regionId: ID
+}
+
+input PlatformInput {
+    structure: ID
+    equipments: [ID]
+}
+
+input ReportByAccountAndEquipmentInput {
+    account_id: ID
+    equipment_id: ID
+}
+
+input ReportByEquipmentAccountPeriodInput {
+    equipment_name: String
+    period_name: String
+    account_id : ID
+}
+
+input LastFinalizedReportByEquipmentAndAccountInput {
+    equipment_name: String
+    account_id : ID
+}
+
+input IntrantCmmConfigByStructureAndEquipmentInput {
+    structureId: [ID]
+    equipmentId: ID
+}
+
+input IntrantCmmConfigInput {
+    structureId: ID
+    intrantId: ID
+    equipmentId: ID
+    cmm: Int
+}
+
+input SynthesisRequestInput {
+    supervised_structure_ids: [ID]
+    equipment_id: ID
+    start_date: String
+    end_date: String
+    status_id: ID
+}
+
+input AdjustmentInput {
+    type: ID,
+    quantity: Int,
+    comment: String
+}
+
+input AdjustmentTypeInput {
+    name: String,
+    type: String
+}
+
+#************** ************* ********************#
+#************** **** Query ** ********************#
+#************** ************* ********************#
+
+type Query {
+    region(id: ID): Region
+    regions: [Region]
+
+    sanguineProduct(id: ID): SanguineProduct
+    sanguineProducts: [SanguineProduct]
+
+    district(id: ID): District
+    districts: [District]
+
+    structure(id: ID): Structure
+    structures: [Structure]
+
+    users: [User]
+    user(id: ID): User
+
+    roles: [Role]
+    role(id: ID): Role
+
+    accounts: [Account]
+    account(id: ID): Account
+
+    statuses: [Status]
+    status(id: ID): Status
+
+    informationUnits: [InformationUnit]
+    informationUnit(id: ID): InformationUnit
+
+    informationSubUnits: [InformationSubUnit]
+    informationSubUnit(id: ID): InformationSubUnit
+
+    informationSubSubUnits: [InformationSubSubUnit]
+    informationSubSubUnit(id: ID): InformationSubSubUnit
+
+    equipments: [Equipment]
+    equipment(id: ID): Equipment
+
+    intrants: [Intrant]
+    intrant(id: ID): Intrant
+
+    intrantTypes: [IntrantType]
+    intrantType(id: ID): IntrantType
+
+    information_s: [Information]
+    information(id: ID): Information
+
+    months: [Month]
+    month(id: ID): Month
+
+    periods: [Period]
+    period(id: ID): Period
+
+    labActivityDatas: [LabActivityData]
+    labActivityData(id: ID): LabActivityData
+
+    intrantMvtDatas: [IntrantMvtData]
+    intrantMvtData(id: ID): IntrantMvtData
+
+    reports: [Report]
+    report(id: ID): Report
+
+    loginAttempts: [LoginAttempt]
+    loginAttempt(id: ID): LoginAttempt
+
+    syntheses: [Synthesis]
+
+    sapNotifications: [SapNotification]
+    sapNotification(id: ID): SapNotification
+
+    adjustmentTypes: [AdjustmentType]
+
+    transactions: [Transaction]
+    transaction(id: ID): Transaction
+    transactionsByDestinationId(id: ID): [Transaction]
+    transactionsByOriginId(id: ID): [Transaction]
+    transactionsByOriginOrDestinationId(originId: ID, destinationId: ID): [Transaction]
+
+
+    #******** Filtered Query ***********#
+    structuresByRegion(id: ID):[Structure]
+
+    #******** Others Query ***********#
+    platforms: [Structure]
+    reportByAccountAndEquipment(request: ReportByAccountAndEquipmentInput): Report
+    periodsById(id: ID): [Period]
+    periodByName(name: String): Period
+    reportByAccountAndEquipmentAndPeriodAlso(request: ReportByEquipmentAccountPeriodInput): Report
+    lastFinalizedReportByEquipmentAndAccount(request: LastFinalizedReportByEquipmentAndAccountInput): Report
+    lastsFinalizedReportByEquipmentAndAccount(request: LastFinalizedReportByEquipmentAndAccountInput): [Report]
+    equipmentInformationByName(name: String): EquipmentInformation
+    equipmentByNameOther(name: String): Equipment
+    reportsByAccountAndEquipmentWithinDateRange(request: ReportHistoryInput) : [Report]
+    reportsBySupervisedStructureAndEquipmentWithinDateRange(request: AdminReportHistoryInput) : [Report]
+    intrantCmmConfigByStructureAndEquipment(request: IntrantCmmConfigByStructureAndEquipmentInput): [IntrantCmmConfig]
+    reportsBySupervisedStructuresAndEquipmentWithinDateRange(request: SynthesisRequestInput) : [Report]
+    transactionByDateRange(request: TransactionByPeriodInput): [Transaction]
+}
+
+#************** ************** ********************#
+#************** ** Mutation ** ********************#
+#************** ************** ********************#
+
+type Mutation {
+    createRegion(regionInput: RegionInput): Region
+    createDistrict(districtInput: DistrictInput): District
+    createStructure(structureInput: StructureInput): Structure
+    createUser(userInput: UserInput): User
+    createRole(roleInput: RoleInput): Role
+    createAccount(accountInput: AccountInput): Account
+    createStatus(statusInput: StatusInput): Status
+    createInformationUnit(informationUnitInput: InformationUnitInput): InformationUnit
+    createInformationSubUnit(informationSubUnitInput: InformationSubUnitInput): InformationSubUnit
+    createInformationSubSubUnit(informationSubSubUnitInput: InformationSubSubUnitInput): InformationSubSubUnit
+    createEquipment(equipmentInput: EquipmentInput): Equipment
+    createIntrant(intrantInput: IntrantInput): Intrant
+    createIntrantType(intrantTypeInput: IntrantTypeInput): IntrantType
+    createInformation(informationInput: InformationInput): Information
+    createMonth(monthInput: MonthInput): Month
+    createPeriod(periodInput: PeriodInput): Period
+    createReport(input: ReportInput): Report
+    createLabActivityData(labActivityDataInput: LabActivityDataInput): LabActivityData
+    createIntrantMvtData(intrantMvtDataInput: IntrantMvtDataInput): IntrantMvtData
+    createPlatform(platformInput: PlatformInput): Structure
+    createTransaction(input: TransactionInput): Transaction
+    createSapNotification(input: SapNotificationInput): SapNotification
+    createCmmConfig(input: IntrantCmmConfigInput): IntrantCmmConfig
+    createCmmConfigs(inputs: [IntrantCmmConfigInput]): [IntrantCmmConfig]
+
+    updateRegion(id: ID, regionInput: RegionInput): Region
+    updateDistrict(id: ID, districtInput: DistrictInput): District
+    updateStructure(id: ID, structureInput: StructureInput): Structure
+    updateUser(id: ID, userInput: UserInput): User
+    updateRole(id: ID, roleInput: RoleInput): Role
+    updateAccount(id: ID, accountInput: AccountInput): Account
+    updateStatus(id: ID, statusInput: StatusInput): Status
+    updateInformationUnit(id: ID, informationUnitInput: InformationUnitInput): InformationUnit
+    updateInformationSubUnit(id: ID, informationSubUnitInput: InformationSubUnitInput): InformationSubUnit
+    updateInformationSubSubUnit(id: ID, informationSubSubUnitInput: InformationSubSubUnitInput): InformationSubSubUnit
+    updateEquipment(id: ID, equipmentInput: EquipmentInput): Equipment
+    updateIntrant(id: ID, intrantInput: IntrantInput): Intrant
+    updateIntrantType(id: ID, intrantTypeInput: IntrantTypeInput): IntrantType
+    updateInformation(id: ID, informationInput: InformationInput): Information
+    updateMonth(id: ID, monthInput: MonthInput): Month
+    updatePeriod(id: ID, periodInput: PeriodInput): Period
+    updateReport(id: ID, reportInput: ReportInput): Report
+    updateLabActivityData(id: ID, labActivityDataInput: LabActivityDataInput): LabActivityData
+    updateIntrantMvtData(id: ID, intrantMvtDataInput: IntrantMvtDataInput): IntrantMvtData
+    updateSapNotification(id: ID, isResolved: Boolean): SapNotification
+    updateIntrantFactors(intrantInputList: [UpdateIntrantInput]): [Intrant]
+
+    deleteRegion(id: ID): Boolean
+    deleteDistrict(id: ID): Boolean
+    deleteStructure(id: ID): Boolean
+    deleteUser(id: ID): Boolean
+    deleteRole(id: ID): Boolean
+    deleteAccount(id: ID): Boolean
+    deleteStatus(id: ID): Boolean
+    deleteInformationUnit(id: ID): Boolean
+    deleteInformationSubUnit(id: ID): Boolean
+    deleteInformationSubSubUnit(id: ID): Boolean
+    deleteEquipment(id: ID): Boolean
+    deleteIntrant(id: ID): Boolean
+    deleteIntrantType(id: ID): Boolean
+    deleteInformation(id: ID): Boolean
+    deleteMonth(id: ID): Boolean
+    deletePeriod(id: ID): Boolean
+    deleteLabActivityData(id: ID): Boolean
+    deleteReport(id: ID): Boolean
+    deleteIntrantMvtData(id: ID): Boolean
+    deleteSapNotification(id: ID): Boolean
+}

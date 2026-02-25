@@ -1,0 +1,74 @@
+<div class="wrapper-page-content row f-s-12 justify-content-between">
+  <div class="col-sm-12">
+    <mat-card class="r-0">
+      <mat-card-content class="app-title-bar">
+        <h2 class="th2">Créer un utilisateur</h2>
+      </mat-card-content>
+      <mat-card-content>
+        <div class="app-form-wrapper">
+          <mat-horizontal-stepper [linear]="isLinear" #stepper>
+            <mat-step class="f-s-12" [stepControl]="reactiveStep1!">
+              <form [formGroup]="reactiveStep1!">
+                <ng-template class="f-s-12" matStepLabel>Etape 1</ng-template>
+                <mat-form-field class="col-sm-4" appearance="outline">
+                  <mat-label class="f-s-12">Type utilisateur</mat-label>
+                  <mat-select class="f-s-12" formControlName="role">
+                    <mat-option class="f-s-12">-- None --</mat-option>
+                    @for (item of roles; track $index) {
+                    <mat-option class="f-s-12" value="{{item.id}}">{{item.role}}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field class="col-sm-4" appearance="outline">
+                  <mat-label class="f-s-12">Region</mat-label>
+                  <mat-select class="f-s-12" formControlName="region" multiple>
+                    @for (region of regions; track $index) {
+                    <mat-option class="f-s-12" [value]="region.id">{{ region.name }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field class="col-sm-4" appearance="outline">
+                  <mat-label class="f-s-12">Plateforme</mat-label>
+                  <mat-select class="f-s-12" formControlName="platform" multiple>
+                    @for (platform of filteredPlatforms; track $index) {
+                    <mat-option class="f-s-12" [value]="platform.id">{{ platform.name }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <div>
+                  <button class="f-s-12" mat-button matStepperNext>Next</button>
+                </div>
+              </form>
+            </mat-step>
+            <mat-step class="f-s-12" [stepControl]="reactiveStep2!">
+              <form (ngSubmit)="submitForm(reactiveStep2!)" [formGroup]="reactiveStep2!">
+                <ng-template class="f-s-12" matStepLabel>Etape 2</ng-template>
+                <mat-form-field class="col-sm-6" appearance="outline">
+                  <mat-label class="f-s-12">Nom utilisateur</mat-label>
+                  <input class="f-s-12" matInput formControlName="name" />
+                </mat-form-field>
+
+                <mat-form-field class="col-sm-6" appearance="outline">
+                  <mat-label class="f-s-12">Téléphone</mat-label>
+                  <input class="f-s-12" matInput formControlName="phone" />
+                </mat-form-field>
+                <div>
+                  <button class="m-r-8 f-s-12" mat-button matStepperPrevious>Back</button>
+                  <button class="f-s-12" mat-raised-button type="submit">Ajouter</button>
+                </div>
+              </form>
+            </mat-step>
+          </mat-horizontal-stepper>
+        </div>
+      </mat-card-content>
+      <mat-card-content style="margin-top: 20px">
+        <p class="th2"></p>
+      </mat-card-content>
+      <mat-card-content style="margin-bottom: 20px; margin-top: 20px; min-height: 200px">
+        <app-table />
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

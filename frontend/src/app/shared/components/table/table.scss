@@ -1,0 +1,5 @@
+.custom-dialog .mat-mdc-dialog-container {
+  border-radius: 2px;
+  width: 800px;
+  overflow: hidden; /* important pour que le contenu respecte le radius */
+}

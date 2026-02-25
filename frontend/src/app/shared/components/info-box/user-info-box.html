@@ -1,0 +1,62 @@
+<div style="display: flex; flex-direction: column; gap: 0.7rem; margin-top: 0px">
+  <div
+    style="display: flex; flex-direction: row; gap: 1rem; color: black"
+    class="info-box padding2px"
+  >
+    <div style="margin-bottom: 5px" class="pull-left">
+      <div class="regular">
+        <span openlmis-message="requisitionType">Weekly report</span>
+      </div>
+    </div>
+    <div
+      style="display: flex; align-items: center; flex-direction: row; gap: 10rem"
+      class="pull-left requisition-head-block"
+    >
+      <div class="row-fluid" id="requisition-head-block">
+        <div class="span3">
+          <strong id="facilityLabel">Etablissement</strong>
+          :&nbsp;
+          <span id="facility" class="ng-binding">{{user_info.structures[0].name }}</span>
+        </div>
+        <div class="span3">
+          <strong id="operatedByLabel">Type d'utilisateur</strong>
+          : &nbsp;
+          <span id="operatedBy" class="ng-binding">{{ user_info.role.role }}</span>
+        </div>
+      </div>
+      <div class="row-fluid">
+        <div class="span3">
+          <strong id="emergencyOrderLabel">District</strong>
+          : &nbsp;
+          <span id="emergencyOrderPoint" class="ng-binding">
+            {{ user_info.structures[0].district.name }}
+          </span>
+        </div>
+        <div class="span3">
+          <strong>
+            <span id="geographicZoneLabel" class="ng-binding">Région</span>
+            :
+          </strong>
+          <span id="geographicZone" class="ng-binding">
+            {{ user_info.structures[0].district.region.name }}
+          </span>
+        </div>
+      </div>
+      <div class="row-fluid">
+        <div class="span3">
+          <strong>
+            <span id="parentLevelLabel" class="ng-binding">Equipement</span>
+            :
+          </strong>
+          <span id="parentLevel" class="ng-binding">&nbsp;{{ equipment }}</span>
+        </div>
+        <div class="span6">
+          <strong id="reportingPeriodLabel">Période :</strong>
+          &nbsp;
+          <span id="reportingPeriod" class="ng-binding">{{ period }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+</div>

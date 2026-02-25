@@ -1,0 +1,61 @@
+
+services:
+
+  db:
+    image: postgres:15-alpine
+    container_name: db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-appdb}
+      POSTGRES_USER: ${POSTGRES_USER:-appuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-apppassword}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-appdb}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-appuser}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-apppassword}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost,http://frontend}
+    depends_on:
+      - db 
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: unless-stopped
+    environment:
+      BASE_URL: ${BASE_URL}
+      API_BASE_URL: ${API_BASE_URL}
+      API_BASE_PORT: ${API_BASE_PORT}
+      GRAPHQL_END_POINT: ${GRAPHQL_END_POINT}
+      API_REST_END_POINT: ${API_REST_END_POINT}
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "80:80"
+
+
+volumes:
+  db_data:
+
+

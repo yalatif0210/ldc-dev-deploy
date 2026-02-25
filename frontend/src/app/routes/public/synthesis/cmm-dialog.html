@@ -1,0 +1,70 @@
+<h2
+  mat-dialog-title
+  style="background-color: rgb(115, 141, 151); color: #fff; padding: 8px; margin: 0"
+>
+  CONFIGURATION CMM
+</h2>
+<mat-dialog-content style="margin-top: 20px">
+  <div
+    style="border-radius: 0px; height: 300px; overflow-x: auto"
+    aria-label="Tableau de validation"
+  >
+    <table class="validation-table" role="table">
+      <thead>
+        <tr>
+          <th colspan="5" style="text-align: center">{{equipmentInfo.name}}</th>
+        </tr>
+        <tr>
+          <th style="width: 5%">Id</th>
+          <th style="width: 15%">Code</th>
+          <th style="width: 50%">Désignation</th>
+          <th style="width: 15%">Unité</th>
+          <th style="width: 15%">Cmm</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (intrant of paginate(page); track $index){
+        <tr>
+          <td style="text-align: center">{{ `i-${intrant.id}` }}</td>
+          <td style="text-align: center">{{intrant.code}}</td>
+          <td>{{intrant.name}}</td>
+          <td style="text-align: center">{{intrant.sku}}</td>
+          <td style="text-align: center">
+            <input
+              [(ngModel)]="pharmInputs['cmm_qty_for_intrant_'+intrant.id]"
+              [ngModelOptions]="{standalone: true}"
+              style="text-align: center; width: 90%"
+              matInput
+              type="number"
+              min="0"
+              placeholder="0"
+            />
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    <div class="pagination">
+      <button (click)="changePage(-1)" [disabled]="page === 1">◀</button>
+      @for(item of arrayFromTotalPages; track $index){
+      <button (click)="setCurrentPage($index+1)" [className]="page === $index+1 ? 'active' : ''">
+        {{$index+1}}
+      </button>
+      }
+      <button (click)="changePage(1)" [disabled]="page === totalPages">▶</button>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<div mat-dialog-actions>
+  <div class="col-sm-12" style="margin-top: 20px">
+    <button
+      (click)="onConfirm()"
+      [style.cursor]="disabledConfirm ? 'not-allowed' : 'pointer'"
+      class="search action-button"
+      [disabled]="disabledConfirm"
+    >
+      Enregistrer
+    </button>
+  </div>
+</div>

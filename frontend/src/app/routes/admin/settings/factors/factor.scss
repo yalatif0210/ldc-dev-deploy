@@ -1,0 +1,15 @@
+.center {
+  text-align: center;
+}
+
+.excel-table td[contenteditable="true"] {
+  background: #fff;
+  cursor: text;
+  direction: ltr;
+  unicode-bidi: plaintext;
+}
+
+.excel-table td[contenteditable="true"]:focus {
+  outline: 0.5px solid #4CAF50;
+  background: #eaffea;
+}

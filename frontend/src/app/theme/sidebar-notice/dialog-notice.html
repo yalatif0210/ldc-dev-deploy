@@ -1,0 +1,81 @@
+@if(data.transactionType === 'NOTIFICATION') {
+<h2 mat-dialog-title>ALERTE - {{data.data.emitter.name}}</h2>
+}@else {
+<h2 mat-dialog-title>Transfert IN de {{data.data.origin.name}}</h2>
+} @if(data.transactionType === 'NOTIFICATION'){
+<div mat-dialog-content>
+  <h4 style="margin-left: 0px" class="f-w-300">
+    <p>
+      <b>Equipement :</b>
+      {{ data.data.equipment.name }}
+    </p>
+    <p>
+      <b>Intrant :</b>
+      {{ data.data.intrant.name }}
+    </p>
+    <p>
+      <b>Bésoin :</b>
+      {{ data.data.quantity }} unités
+    </p>
+    <p><b>Quantité à transférer :</b></p>
+    <form [formGroup]="transfert!" appearance="outline">
+      <input
+        id="rnrType"
+        type="number"
+        formControlName="transfert_target"
+        class="span3 ng-pristine ng-valid app-select"
+        style="width: 100%; margin-bottom: 15px"
+        placeholder="Quantité à transférer"
+        min="1"
+      />
+      <button
+        [disabled]="disable"
+        (click)="handleResolveNotification(data)"
+        style="background-color: darkcyan"
+        class="action-button"
+      >
+        {{'Exécuter'}}
+      </button>
+    </form>
+  </h4>
+</div>
+}@else {
+<div mat-dialog-content>
+  <h4 style="margin-left: 0px" class="f-w-300">
+    <p>
+      <b>Intrant :</b>
+      {{ transactionIntrant.name }}
+    </p>
+    <p>
+      <b>Quantité transférée :</b>
+      {{ transactionIntrant.quantity }} unités
+    </p>
+    <div class="row">
+      <div>
+        <button
+          [disabled]="disable"
+          (click)="handleResolveNotification(data, true)"
+          style="background-color: darkcyan"
+          class="action-button"
+        >
+          {{'Approuver'}}
+        </button>
+      </div>
+      <div>
+        <button
+          [disabled]="disable"
+          (click)="handleResolveNotification(data, true, false)"
+          style="background-color: red"
+          class="action-button"
+        >
+          {{'Rejeter'}}
+        </button>
+      </div>
+    </div>
+  </h4>
+</div>
+}
+
+<div mat-dialog-actions>
+  <button mat-button color="primary" mat-dialog-close>Close</button>
+</div>

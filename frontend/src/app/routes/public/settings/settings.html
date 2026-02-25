@@ -1,0 +1,92 @@
+<div class="row f-s-12 justify-content-between wrapper-page-content">
+  <div class="col-sm-12">
+    <mat-card class="r-0">
+      <mat-card-content class="app-title-bar">
+        <h2 class="th2">Configurer mes CMM</h2>
+      </mat-card-content>
+      <mat-card-content>
+        <div class="app-form-wrapper">
+          <form [formGroup]="home_form!" appearance="outline">
+            <div class="app-input-label col-sm-12">
+              Nom de l'équipement
+              <span style="color: red">*</span>
+            </div>
+            <div class="row-fluid" bis_skin_checked="1">
+              <select
+                id="rnrType"
+                class="span3 ng-pristine ng-valid app-select"
+                formControlName="equipment"
+              >
+                <option option value="">Sélectionnez un équipement</option>
+                @for (item of equipments; track $index) {
+                <option value="{{item.id}}">{{item.name}}</option>
+                }
+              </select>
+            </div>
+          </form>
+        </div>
+      </mat-card-content>
+      <mat-card-content style="margin-top: 30px">
+        @if(equipmentIntrants || cmmConfigInstance){
+        <div
+          style="border-radius: 0px; height: 300px; overflow-x: auto"
+          aria-label="Tableau de validation"
+        >
+          <table class="validation-table" role="table">
+            <thead>
+              <tr>
+                <th style="width: 5%">Id</th>
+                <th style="width: 15%">Code</th>
+                <th style="width: 50%">Désignation</th>
+                <th style="width: 15%">Unité</th>
+                <th style="width: 15%">Cmm</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if(equipmentIntrants){ @for (intrant of equipmentIntrants; track $index){
+              <tr>
+                <td style="text-align: center">{{ `i-${intrant.id}` }}</td>
+                <td style="text-align: center">{{intrant.code}}</td>
+                <td>{{intrant.name}}</td>
+                <td style="text-align: center">{{intrant.sku}}</td>
+                <td style="text-align: center">
+                  <input
+                    [(ngModel)]="pharmInputs['cmm_qty_for_intrant_'+intrant.id]"
+                    [ngModelOptions]="{standalone: true}"
+                    style="text-align: center; width: 90%"
+                    matInput
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                  />
+                </td>
+              </tr>
+              } } @if(cmmConfigInstance){ @for (element of cmmConfigInstance; track $index){
+              <tr>
+                <td style="text-align: center">{{ `i-${element.intrant.id}` }}</td>
+                <td style="text-align: center">{{element.intrant.code}}</td>
+                <td>{{element.intrant.name}}</td>
+                <td style="text-align: center">{{element.intrant.sku}}</td>
+                <td style="text-align: center">{{element.cmm}}</td>
+              </tr>
+              } }
+            </tbody>
+          </table>
+          @if (!cmmConfigInstance) {
+          <div class="col-sm-12" style="margin-top: 20px">
+            <button
+              (click)="onConfirm()"
+              [style.cursor]="disabledConfirm ? 'not-allowed' : 'pointer'"
+              class="search action-button"
+              [disabled]="disabledConfirm"
+            >
+              Enregistrer
+            </button>
+          </div>
+          }
+        </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

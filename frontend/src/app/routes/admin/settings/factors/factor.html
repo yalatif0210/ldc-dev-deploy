@@ -1,0 +1,160 @@
+<div class="wrapper-page-content row f-s-12 justify-content-between">
+  <div class="col-sm-12">
+    <mat-card class="r-0">
+      <mat-card-content class="app-title-bar">
+        <h2 class="th2">{{`Equipements`}}</h2>
+      </mat-card-content>
+      <mat-card-content>
+        <div class="app-form-wrapper">
+          <form (ngSubmit)="handleSubmit()" [formGroup]="form!" appearance="outline">
+            <div class="app-input-label col-sm-12">
+              Equipement
+              <span style="color: red">*</span>
+            </div>
+            <div style="margin-bottom: 15px" class="col-sm-12">
+              <select
+                id="rnrType"
+                class="span3 ng-pristine ng-valid app-select f-s-12 justify-content-between"
+                formControlName="equipments"
+              >
+                <option option value="">{{`Sélectionnez un équipement`}}</option>
+                @for (equipment of equipments; track $index) {
+                <option [value]="equipment.id">{{ equipment.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="col-sm-12" style="margin-top: 20px">
+              <button type="submit" class="search action-button">Générer</button>
+            </div>
+          </form>
+        </div>
+      </mat-card-content>
+      <mat-card-content style="margin-top: 20px">
+        <p class="th2"></p>
+      </mat-card-content>
+      <mat-card-content style="margin-bottom: 20px; margin-top: 30px">
+        @if (show_intrant) {
+        <div style="overflow-x: auto; width: 100%">
+          <table class="excel-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Désignation</th>
+                <th>Type</th>
+                <th>{{'Unité de distribution (NPSP)'}}</th>
+                <th>{{'Unité primaire de rapportage (Sites)'}}</th>
+                <th>Facteur de conversion en unité primaire</th>
+                <th>Facteur de conversion en kit</th>
+                <th>Autre facteur de conversion</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of paginate(page); track $index) {
+              <tr>
+                <td>{{ item.code }}</td>
+                <td>{{ item.name}}</td>
+                <td>{{ item.intrantType.name }}</td>
+                <td
+                  class="center"
+                  dir="ltr"
+                  (focus)="onFocus($event)"
+                  (click)="selectCell($index, 0)"
+                  (paste)="onPaste($event)"
+                  [class.pasted]="isPasted($index,0)"
+                  contenteditable="true"
+                  [textContent]="item.sku"
+                  (blur)="updateValue(item.id, 'sku', $event)"
+                ></td>
+                <td
+                  class="center"
+                  dir="ltr"
+                  (focus)="onFocus($event)"
+                  (click)="selectCell($index, 1)"
+                  (paste)="onPaste($event)"
+                  [class.pasted]="isPasted($index,1)"
+                  contenteditable="true"
+                  [textContent]="item.primary_sku"
+                  (blur)="updateValue(item.id, 'primary_sku', $event)"
+                >
+                </td>
+                <td
+                  class="center"
+                  dir="ltr"
+                  (focus)="onFocus($event)"
+                  (click)="selectCell($index, 2)"
+                  (paste)="onPaste($event)"
+                  [class.pasted]="isPasted($index,2)"
+                  contenteditable="true"
+                  [textContent]="item.convertionFactor"
+                  (blur)="updateValue(item.id, 'convertionFactor', $event)"
+                ></td>
+                <td
+                  class="center"
+                  dir="ltr"
+                  (focus)="onFocus($event)"
+                  (click)="selectCell($index, 3)"
+                  (paste)="onPaste($event)"
+                  [class.pasted]="isPasted($index,3)"
+                  contenteditable="true"
+                  [textContent]="item.roundFactor"
+                  (blur)="updateValue(item.id, 'roundFactor', $event)"
+                ></td>
+                <td
+                  class="center"
+                  dir="ltr"
+                  (focus)="onFocus($event)"
+                  (click)="selectCell($index, 4)"
+                  (paste)="onPaste($event)"
+                  [class.pasted]="isPasted($index,4)"
+                  contenteditable="true"
+                  [textContent]="item.otherFactor"
+                  (blur)="updateValue(item.id, 'otherFactor', $event)"
+                ></td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          <div class="pagination">
+            <button (click)="changePage(-1)" [disabled]="page === 1">◀</button>
+            @for(item of arrayFromTotalPages; track $index){
+            <button
+              (click)="setCurrentPage($index+1)"
+              [className]="page === $index+1 ? 'active' : ''"
+            >
+              {{$index+1}}
+            </button>
+            }
+            <button (click)="changePage(1)" [disabled]="page === totalPages">▶</button>
+          </div>
+        </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+@if(updated){
+<div
+  style="
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 40px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 0.5rem;
+    padding: 13px;
+    background: rgba(0, 0, 0, 0.7);
+  "
+>
+  <div class="row">
+    <button class="action-button" (click)="handleUpdatedValue()">
+      Enregistrer les modifications
+    </button>
+  </div>
+</div>
+}

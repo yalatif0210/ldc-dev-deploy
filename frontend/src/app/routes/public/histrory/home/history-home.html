@@ -1,0 +1,78 @@
+<div class="row f-s-12 justify-content-between wrapper-page-content">
+  <div class="col-sm-12">
+    <mat-card class="r-0">
+      <mat-card-content class="app-title-bar">
+        <h2 class="th2">Voir les rapports hebdomadaires</h2>
+      </mat-card-content>
+      <mat-card-content>
+        <div class="app-form-wrapper">
+          <form [formGroup]="home_form!" appearance="outline">
+            <div class="app-input-label col-sm-12">
+              Nom de l'équipement
+              <span style="color: red">*</span>
+            </div>
+            <div style="margin-bottom: 15px" class="col-sm-12">
+              <select
+                id="rnrType"
+                class="span3 ng-pristine ng-valid app-select f-s-12 justify-content-between"
+                formControlName="equipment"
+              >
+                <option option value="">Sélectionnez un équipement</option>
+                @for (item of equipmentList; track $index) {
+                <option value="{{item.id}}">{{item.name}}</option>
+                }
+              </select>
+            </div>
+            @if(isUserAdminOrSupervisor){
+            <div class="app-input-label col-sm-12">
+              Plateforme
+              <span style="color: red">*</span>
+            </div>
+            <div style="margin-bottom: 15px" class="col-sm-12">
+              <select
+                id="rnrType"
+                class="span3 ng-pristine ng-valid app-select f-s-12 justify-content-between"
+                formControlName="structure"
+              >
+                <option option value="">Sélectionnez une plateforme</option>
+                @for (item of structure_by_equipment; track $index) {
+                <option [value]="item.id">{{item.name}}</option>
+                }
+              </select>
+            </div>
+            }
+            <div class="app-input-label col-sm-12">
+              Intervalle de date
+              <span style="color: red">*</span>
+            </div>
+            <div class="col-sm-12">
+              <input
+                type="text"
+                #datepicker_start
+                id="datepicker_start"
+                placeholder="Date de début"
+                class="m-r-8 r-1 f-s-12 justify-content-between"
+                formControlName="start_date"
+              />
+              <input
+                type="text"
+                #datepicker_end
+                id="datepicker_end"
+                placeholder="Date de fin"
+                class="m-r-8 r-1 f-s-12 justify-content-between"
+                formControlName="end_date"
+              />
+            </div>
+
+            <div class="col-sm-12" style="margin-top: 20px">
+              <button (click)="onSubmit()" class="search action-button">Rechercher</button>
+            </div>
+          </form>
+        </div>
+      </mat-card-content>
+      <mat-card-content style="margin-top: 20px">
+        <app-table />
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

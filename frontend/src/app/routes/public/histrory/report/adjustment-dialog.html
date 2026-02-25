@@ -1,0 +1,41 @@
+<h2 mat-dialog-title style="background: linear-gradient(to bottom, #0d8d98 0%, #0d6369 100%); color: #fff; padding: 8px; margin: 0;">
+  AJUSTEMENTS
+</h2>
+<mat-dialog-content style="margin-top: 20px;">
+  <div
+    style="border-radius: 0; min-width: 500px; max-height: 300px; overflow-x: auto"
+    aria-label="adjustment"
+  >
+    <table class="validation-table" role="table">
+      <thead>
+      <tr>
+        <th colspan="3" style="text-align:center">{{target}}</th>
+      </tr>
+      <tr>
+        <th scope="col">Type ajustement</th>
+        <th scope="col">Quantité</th>
+        <th scope="col">Commentaire</th>
+      </tr>
+      </thead>
+      <tbody>
+        @if (!adjustments) {
+          <tr>
+            <td colspan="3">{{'Aucune donnée à afficher'}}</td>
+          </tr>
+        }@else{
+          @for (item of adjustments; track item.id) {
+            <tr>
+              <td>{{getAdjustmentName(item.type)}}</td>
+              <td>{{item.quantity}}</td>
+              <td>{{item.comment}}</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</mat-dialog-content>
+
+<div mat-dialog-actions>
+  <button mat-button color="primary" mat-dialog-close>Close</button>
+</div>

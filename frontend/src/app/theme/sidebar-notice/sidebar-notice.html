@@ -1,0 +1,247 @@
+<mat-tab-group>
+  @for (tab of tabs; track tab) {
+  <mat-tab [style]="" [label]="tab.label">
+    @if (tab.label !== 'Transactions') {
+    <mat-chip-listbox style="margin-bottom: 16px" class="m-t-16">
+      @for (item of chip_options; track $index) {
+      <mat-chip-option
+        [selected]="notificationTarget === $index"
+        (click)="setNotificationListTarget($index)"
+        class="button-list"
+      >
+        {{ item.label }}
+      </mat-chip-option>
+      }
+    </mat-chip-listbox>
+    @for (msg of notificationList; track msg) {
+    <div
+      [style.background-color]="msg.backgroundColor"
+      [style.border-left]="'4px solid #1877f2'"
+      [style.margin-bottom]="'10px'"
+      class="d-flex align-items-center gap-16 p-16 b-1 r-8"
+    >
+      <div
+        class="d-flex align-items-center justify-content-center r-8 {{ msg.color }}"
+        [style.width.rem]="3"
+        [style.height.rem]="3"
+      >
+        {{ msg.icon }}
+      </div>
+      <div class="flex-grow-1 w-0">
+        <div>
+          <h5 class="m-0 f-s-13 f-w-550 d-flex justify-content-between align-items-center">
+            {{ msg.title | slice:0:80 }}
+            <span class="f-s-12 f-w-400 text-muted">{{ msg.date | date: 'short' }}</span>
+          </h5>
+        </div>
+        <div class="f-s-12 d-flex justify-content-between align-items-center">
+          {{ msg.content }}
+        </div>
+        <span class="f-s-12 f-w-400 text-muted">
+          @if (userAccount.structures[0]?.id === msg.emitter?.id && msg.labelTitle === 'Faire suivre...') {
+            <div></div>
+          }@else {
+          <button
+            type="button"
+            [disabled]="msg.labelTitle !== 'Faire suivre...'"
+            class="p-2 r-0 m-0 align-baseline f-s-12 f-w-400 text-muted"
+            (click)="openNoticeDialog(msg)"
+            [style.background-color]="msg.labelTitle === 'Faire suivre...' && '#5a64ff !important'"
+            [style.background-color]="msg.labelTitle === 'Non Finalisé' && 'orange !important'"
+            [style.background-color]="msg.labelTitle === 'En attente' && 'red !important'"
+          >
+            {{msg.labelTitle}}
+          </button>
+          }
+        </span>
+      </div>
+    </div>
+    } @if(notificationTarget === 0 || notificationTarget === 4){
+    <div>
+      <span class="f-s-12 f-w-400 text-muted">
+        <button
+          type="button"
+          [style.background-color]="'transparent !important'"
+          [style.color]="'#5a64ff !important'"
+          class="p-2 r-0 m-0 align-baseline f-s-12 f-w-400 text-muted"
+          (click)="setNotificationListTarget(notificationTarget === 0 ? 4 : 0)"
+        >
+          {{notificationTarget === 0 ? 'Voir tout...' : 'Voir moins...'}}
+        </button>
+      </span>
+    </div>
+    } } @else {
+    <mat-tab-group>
+      @for(sub_tab of sub_tabs; track sub_tab) {
+      <mat-tab [label]="sub_tab.label">
+        @if(sub_tab.label === 'Transferts'){
+        <ng-container>
+          <div>
+            <h4 style="margin-left: 0px" class="f-w-300">Sélectionnez une unité à transferer</h4>
+            <form [formGroup]="transfert!" appearance="outline">
+              <div style="margin-bottom: 15px" class="col-sm-12">
+                <select
+                  id="rnrType"
+                  class="span3 ng-pristine ng-valid app-select"
+                  formControlName="transfert_target"
+                >
+                  <option option value="">--- Sélectionnez une unité à transferer ---</option>
+                  <option option value="échantillons sanguins">Echantillon</option>
+                  @if (isUserPharmUser) {
+                    <option option value="intrants">Intrant</option>
+                  }
+                </select>
+              </div>
+            </form>
+            @if (targeted !== '') {
+            <h4 style="margin-left: 0px" class="f-w-200">Transférer des {{targeted}} :</h4>
+            <form [formGroup]="transfert_data!" appearance="outline">
+              @if (targeted === 'échantillons sanguins') {
+              <div style="margin-bottom: 15px" class="col-sm-12">
+                <select
+                  id="rnrType"
+                  class="span3 ng-pristine ng-valid app-select"
+                  formControlName="sample"
+                >
+                  <option option value="">--- Sélectionnez le type d'échantillon ---</option>
+                  @for (item of sanguineProducts; track $index) {
+                  <option option value="{{item.id}}">{{item.name}}</option>
+                  }
+                </select>
+              </div>
+              <div style="margin-bottom: 15px" class="col-sm-12">
+                <select
+                  id="rnrType"
+                  class="span3 ng-pristine ng-valid app-select"
+                  formControlName="equipment"
+                >
+                  <option option value="">--- Sélectionnez un équipement ---</option>
+                  @for (item of equipments; track $index) {
+                  <option option value="{{item.id}}">{{item.name}}</option>
+                  }
+                </select>
+              </div>
+              }@else {
+              <div style="margin-bottom: 15px" class="col-sm-12">
+                <select
+                  id="rnrType"
+                  class="span3 ng-pristine ng-valid app-select"
+                  formControlName="equipment"
+                >
+                  <option option value="">--- Sélectionnez un équipement ---</option>
+                  @for (item of equipments; track $index) {
+                  <option option value="{{item.id}}">{{item.name}}</option>
+                  }
+                </select>
+              </div>
+              <div style="margin-bottom: 15px" class="col-sm-12">
+                <select
+                  id="rnrType"
+                  class="span3 ng-pristine ng-valid app-select"
+                  formControlName="intrant"
+                  style="width: 100%"
+                >
+                  <option option value="">--- Sélectionnez un intrant---</option>
+                  @for (item of intrants; track $index) {
+                  <option option value="{{item.id}}">{{item.name}}</option>
+                  }
+                </select>
+              </div>
+              }
+              <div style="margin-bottom: 15px" class="col-sm-12">
+                <select
+                  id="rnrType"
+                  class="span3 ng-pristine ng-valid app-select"
+                  formControlName="destination"
+                  style="width: 100%"
+                >
+                  <option option value="">--- Sélectionnez la plateforme destinataire ---</option>
+                  @for (item of filteredStructures; track $index) {
+                  <option option value="{{item.id}}">{{item.name}}</option>
+                  }
+                </select>
+              </div>
+              <div style="margin-bottom: 15px" class="col-sm-12">
+                <input
+                  id="rnrType"
+                  type="number"
+                  class="span3 ng-pristine ng-valid app-select"
+                  formControlName="quantity"
+                  style="width: 100%"
+                  placeholder="Quantité à transférer"
+                  min="1"
+                />
+              </div>
+              <div style="margin-bottom: 15px" class="col-sm-12">
+                <button
+                  [disabled]="disabled"
+                  (click)="transactionHandler()"
+                  style="background-color: darkcyan"
+                  class="action-button"
+                >
+                  {{disabled ? 'En cours...' : 'Exécuter'}}
+                </button>
+              </div>
+            </form>
+            }
+          </div>
+        </ng-container>
+        }@else {
+        <ng-container>
+          <h4 style="margin-left: 0px" class="f-w-300">Sélectionnez un équipement</h4>
+          <form [formGroup]="notification_data!" appearance="outline">
+            <div style="margin-bottom: 15px" class="col-sm-12">
+              <select
+                id="rnrType"
+                class="span3 ng-pristine ng-valid app-select"
+                formControlName="notification_equipment"
+              >
+                <option option value="">--- Sélectionnez un équipement ---</option>
+                @for (item of equipments; track $index) {
+                <option option value="{{item.id}}">{{item.name}}</option>
+                }
+              </select>
+            </div>
+            <div style="margin-bottom: 15px" class="col-sm-12">
+              <select
+                id="rnrType"
+                class="span3 ng-pristine ng-valid app-select"
+                formControlName="notification_intrant"
+                style="width: 100%"
+              >
+                <option option value="">--- Sélectionnez un intrant---</option>
+                @for (item of intrants; track $index) {
+                <option option value="{{item.id}}">{{item.name}}</option>
+                }
+              </select>
+            </div>
+            <div style="margin-bottom: 15px" class="col-sm-12">
+              <input
+                id="rnrType"
+                type="number"
+                class="span3 ng-pristine ng-valid app-select"
+                formControlName="notification_quantity"
+                style="width: 100%"
+                placeholder="Quantité demandée"
+                min="1"
+              />
+            </div>
+            <div style="margin-bottom: 15px" class="col-sm-12">
+              <button
+                (click)="sapiNotificationHandler()"
+                style="background-color: darkcyan"
+                class="action-button"
+              >
+                Exécuter
+              </button>
+            </div>
+          </form>
+        </ng-container>
+        }
+      </mat-tab>
+      }
+    </mat-tab-group>
+    }
+  </mat-tab>
+  }
+</mat-tab-group>
