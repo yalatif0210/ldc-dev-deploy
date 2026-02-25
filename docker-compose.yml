@@ -48,9 +48,6 @@ services:
       API_REST_END_POINT: ${API_REST_END_POINT}
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     ports:
       - "80:80"
 
