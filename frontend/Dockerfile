@@ -24,5 +24,4 @@ RUN chmod +x /env.sh
 EXPOSE 80
 ENTRYPOINT ["/env.sh"]
 CMD ["nginx", "-g", "daemon off;"]
-HEALTHCHECK CMD wget -qO- http://localhost/ || exit 1
 

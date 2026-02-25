@@ -31,6 +31,8 @@ services:
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost,http://frontend}
     depends_on:
       - db 
+    healthcheck:
+      disable: true
     ports:
       - "8080:8080"
 
@@ -48,6 +50,8 @@ services:
       API_REST_END_POINT: ${API_REST_END_POINT}
     depends_on:
       - backend
+    healthcheck:
+      disable: true
     ports:
       - "80:80"
 
