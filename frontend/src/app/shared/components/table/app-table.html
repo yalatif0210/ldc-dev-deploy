@@ -4,7 +4,7 @@
       style="height: 500px; width: 100%"
       [columnDefs]="datas.columns"
       [defaultColDef]="defaultColDef"
-      [rowData]="datas?.datas?"
+      [rowData]="datas?.datas"
       [pagination]="true"
       [paginationPageSize]="itemsPerPage"
       [paginationPageSizeSelector]="[10, 20, 50, 100]"
@@ -23,7 +23,7 @@
         </tr>
       </thead>
       <tbody>
-        @for(row of datas?.datas?; track $index) {
+        @for(row of datas?.datas; track $index) {
         <tr>
           @for(column of datas.columns; track $index) { @if(column.field === specific_columns) {
           <td>
