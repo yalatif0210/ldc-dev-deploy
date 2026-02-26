@@ -262,7 +262,7 @@ export class DialogNotice extends FormBaseComponent implements OnInit {
   }
 
   get transactionIntrant() {
-    return this.service.getTransactactionIntrant(this.data?.data?)[0];
+    return this.service.getTransactactionIntrant(this.data?.data)[0];
   }
 
   handleResolveNotification(data: any, isTransfert = false , approved = true) {
