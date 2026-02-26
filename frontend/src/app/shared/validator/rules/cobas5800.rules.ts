@@ -1,12 +1,11 @@
 import { ValidationTargets } from '../validation.service';
 
-
 export const cobas5800Rules = {
   target: 'COBAS 5800',
   rules: [
     {
       subject: 'Vl Plasma VIH1',
-      field_list: [83, 89, 85, 87, 73, 74, 75, 76, 77],
+      field_list: [83, 89, 85, 87, 73, 74, 75, 76, 77, 309],
       checks: [
         {
           name: ValidationTargets.CHECK1,
@@ -36,7 +35,7 @@ export const cobas5800Rules = {
         },
         {
           name: ValidationTargets.CHECK2,
-          description: 'Tested >= Failed',
+          description: 'Tested >= Failed (Pending retest + Rejected)',
           content: {
             left: [
               {
@@ -51,13 +50,19 @@ export const cobas5800Rules = {
                 operator: '+',
                 isPassDataNeeded: false,
               },
+              {
+                field: '309',
+                operator: '+',
+                isPassDataNeeded: false,
+              },
             ],
             operator: '>=',
           },
         },
         {
           name: ValidationTargets.CHECK3,
-          description: 'Pending = Received + Pending (last week) - Tested',
+          description:
+            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
           content: {
             left: [
               {
@@ -82,45 +87,14 @@ export const cobas5800Rules = {
                 operator: '-',
                 isPassDataNeeded: false,
               },
-            ],
-            operator: '=',
-          },
-        },
-        {
-          name: ValidationTargets.CHECK4,
-          description: 'Failed = ∑Rejection',
-          content: {
-            left: [
               {
                 field: '87',
                 operator: '+',
                 isPassDataNeeded: false,
               },
-            ],
-            right: [
               {
-                field: '73',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '74',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '75',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '76',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '77',
-                operator: '+',
+                field: '309',
+                operator: '-',
                 isPassDataNeeded: false,
               },
             ],
@@ -131,7 +105,7 @@ export const cobas5800Rules = {
     },
     {
       subject: 'EID',
-      field_list: [91, 94, 92, 93, 98, 99, 100, 101, 102],
+      field_list: [91, 94, 92, 93, 98, 99, 100, 101, 102, 312],
       checks: [
         {
           name: ValidationTargets.CHECK1,
@@ -161,7 +135,7 @@ export const cobas5800Rules = {
         },
         {
           name: ValidationTargets.CHECK2,
-          description: 'Tested >= Failed',
+          description: 'Tested >= Failed (Pending retest + Rejected)',
           content: {
             left: [
               {
@@ -176,13 +150,19 @@ export const cobas5800Rules = {
                 operator: '+',
                 isPassDataNeeded: false,
               },
+              {
+                field: '312',
+                operator: '+',
+                isPassDataNeeded: false,
+              },
             ],
             operator: '>=',
           },
         },
         {
           name: ValidationTargets.CHECK3,
-          description: 'Pending = Received + Pending (last week) - Tested',
+          description:
+            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
           content: {
             left: [
               {
@@ -207,45 +187,14 @@ export const cobas5800Rules = {
                 operator: '-',
                 isPassDataNeeded: false,
               },
-            ],
-            operator: '=',
-          },
-        },
-        {
-          name: ValidationTargets.CHECK4,
-          description: 'Failed = ∑Rejection',
-          content: {
-            left: [
               {
                 field: '93',
                 operator: '+',
                 isPassDataNeeded: false,
               },
-            ],
-            right: [
               {
-                field: '98',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '99',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '100',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '101',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '102',
-                operator: '+',
+                field: '312',
+                operator: '-',
                 isPassDataNeeded: false,
               },
             ],
@@ -256,7 +205,7 @@ export const cobas5800Rules = {
     },
     {
       subject: 'VL PSC',
-      field_list: [84, 90, 86, 88, 78, 79, 80, 81, 82],
+      field_list: [84, 90, 86, 88, 78, 79, 80, 81, 82, 310],
       checks: [
         {
           name: ValidationTargets.CHECK1,
@@ -286,7 +235,7 @@ export const cobas5800Rules = {
         },
         {
           name: ValidationTargets.CHECK2,
-          description: 'Tested >= Failed',
+          description: 'Tested >= Failed (Pending retest + Rejected)',
           content: {
             left: [
               {
@@ -301,13 +250,19 @@ export const cobas5800Rules = {
                 operator: '+',
                 isPassDataNeeded: false,
               },
+              {
+                field: '310',
+                operator: '+',
+                isPassDataNeeded: false,
+              },
             ],
             operator: '>=',
           },
         },
         {
           name: ValidationTargets.CHECK3,
-          description: 'Pending = Received + Pending (last week) - Tested',
+          description:
+            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
           content: {
             left: [
               {
@@ -332,45 +287,14 @@ export const cobas5800Rules = {
                 operator: '-',
                 isPassDataNeeded: false,
               },
-            ],
-            operator: '=',
-          },
-        },
-        {
-          name: ValidationTargets.CHECK4,
-          description: 'Failed = ∑Rejection',
-          content: {
-            left: [
               {
                 field: '88',
                 operator: '+',
                 isPassDataNeeded: false,
               },
-            ],
-            right: [
               {
-                field: '78',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '79',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '80',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '81',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '82',
-                operator: '+',
+                field: '310',
+                operator: '-',
                 isPassDataNeeded: false,
               },
             ],

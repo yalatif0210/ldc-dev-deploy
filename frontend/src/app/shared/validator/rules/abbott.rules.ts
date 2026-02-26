@@ -5,7 +5,7 @@ export const abbottRules = {
   rules: [
     {
       subject: 'Vl Plasma VIH1',
-      field_list: [263, 269, 265, 267, 253, 254, 255, 256, 257],
+      field_list: [263, 269, 265, 267, 253, 254, 255, 256, 257, 304],
       checks: [
         {
           name: ValidationTargets.CHECK1,
@@ -35,7 +35,7 @@ export const abbottRules = {
         },
         {
           name: ValidationTargets.CHECK2,
-          description: 'Tested >= Failed',
+          description: 'Tested >= Failed (Pending retest + Rejected)',
           content: {
             left: [
               {
@@ -50,13 +50,19 @@ export const abbottRules = {
                 operator: '+',
                 isPassDataNeeded: false,
               },
+              {
+                field: '304',
+                operator: '+',
+                isPassDataNeeded: false,
+              },
             ],
             operator: '>=',
           },
         },
         {
           name: ValidationTargets.CHECK3,
-          description: 'Pending = Received + Pending (last week) - Tested',
+          description:
+            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
           content: {
             left: [
               {
@@ -81,45 +87,14 @@ export const abbottRules = {
                 operator: '-',
                 isPassDataNeeded: false,
               },
-            ],
-            operator: '=',
-          },
-        },
-        {
-          name: ValidationTargets.CHECK4,
-          description: 'Failed = ∑Rejection',
-          content: {
-            left: [
               {
                 field: '267',
                 operator: '+',
                 isPassDataNeeded: false,
               },
-            ],
-            right: [
               {
-                field: '253',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '254',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '255',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '256',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '257',
-                operator: '+',
+                field: '304',
+                operator: '-',
                 isPassDataNeeded: false,
               },
             ],
@@ -130,7 +105,7 @@ export const abbottRules = {
     },
     {
       subject: 'EID',
-      field_list: [271, 274, 272, 273, 278, 279, 280, 281, 282],
+      field_list: [271, 274, 272, 273, 278, 279, 280, 281, 282, 316],
       checks: [
         {
           name: ValidationTargets.CHECK1,
@@ -160,7 +135,7 @@ export const abbottRules = {
         },
         {
           name: ValidationTargets.CHECK2,
-          description: 'Tested >= Failed',
+          description: 'Tested >= Failed (Pending retest + Rejected)',
           content: {
             left: [
               {
@@ -175,13 +150,19 @@ export const abbottRules = {
                 operator: '+',
                 isPassDataNeeded: false,
               },
+              {
+                field: '316',
+                operator: '+',
+                isPassDataNeeded: false,
+              },
             ],
             operator: '>=',
           },
         },
         {
           name: ValidationTargets.CHECK3,
-          description: 'Pending = Received + Pending (last week) - Tested',
+          description:
+            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
           content: {
             left: [
               {
@@ -206,45 +187,14 @@ export const abbottRules = {
                 operator: '-',
                 isPassDataNeeded: false,
               },
-            ],
-            operator: '=',
-          },
-        },
-        {
-          name: ValidationTargets.CHECK4,
-          description: 'Failed = ∑Rejection',
-          content: {
-            left: [
               {
                 field: '273',
                 operator: '+',
                 isPassDataNeeded: false,
               },
-            ],
-            right: [
               {
-                field: '278',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '279',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '280',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '281',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '282',
-                operator: '+',
+                field: '316',
+                operator: '-',
                 isPassDataNeeded: false,
               },
             ],
@@ -255,7 +205,7 @@ export const abbottRules = {
     },
     {
       subject: 'VL PSC',
-      field_list: [264, 270, 266, 268, 258, 259, 260, 261, 262],
+      field_list: [264, 270, 266, 268, 258, 259, 260, 261, 262, 305],
       checks: [
         {
           name: ValidationTargets.CHECK1,
@@ -285,7 +235,7 @@ export const abbottRules = {
         },
         {
           name: ValidationTargets.CHECK2,
-          description: 'Tested >= Failed',
+          description: 'Tested >= Failed (Pending retest + Rejected)',
           content: {
             left: [
               {
@@ -300,13 +250,19 @@ export const abbottRules = {
                 operator: '+',
                 isPassDataNeeded: false,
               },
+              {
+                field: '305',
+                operator: '+',
+                isPassDataNeeded: false,
+              },
             ],
             operator: '>=',
           },
         },
         {
           name: ValidationTargets.CHECK3,
-          description: 'Pending = Received + Pending (last week) - Tested',
+          description:
+            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
           content: {
             left: [
               {
@@ -331,51 +287,20 @@ export const abbottRules = {
                 operator: '-',
                 isPassDataNeeded: false,
               },
-            ],
-            operator: '=',
-          },
-        },
-        {
-          name: ValidationTargets.CHECK4,
-          description: 'Failed = ∑Rejection',
-          content: {
-            left: [
               {
                 field: '268',
                 operator: '+',
                 isPassDataNeeded: false,
               },
-            ],
-            right: [
               {
-                field: '258',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '259',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '260',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '261',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '262',
-                operator: '+',
+                field: '305',
+                operator: '-',
                 isPassDataNeeded: false,
               },
             ],
             operator: '=',
           },
-        },
+        }
       ],
     },
   ],

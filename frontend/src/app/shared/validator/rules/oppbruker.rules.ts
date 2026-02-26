@@ -4,8 +4,8 @@ export const oppBrukerRules = {
   target: 'OPP (BRUKER)',
   rules: [
     {
-      subject: 'VL PLASMA',
-      field_list: [218, 224, 220, 222, 208, 209, 210, 211, 212],
+      subject: 'VL Plasma VIH1',
+      field_list: [218, 224, 220, 222, 208, 209, 210, 211, 212, 302],
       checks: [
         {
           name: ValidationTargets.CHECK1,
@@ -35,7 +35,7 @@ export const oppBrukerRules = {
         },
         {
           name: ValidationTargets.CHECK2,
-          description: 'Tested >= Failed',
+          description: 'Tested >= Failed (Pending retest + Rejected)',
           content: {
             left: [
               {
@@ -50,13 +50,19 @@ export const oppBrukerRules = {
                 operator: '+',
                 isPassDataNeeded: false,
               },
+              {
+                field: '302',
+                operator: '+',
+                isPassDataNeeded: false,
+              },
             ],
             operator: '>=',
           },
         },
         {
           name: ValidationTargets.CHECK3,
-          description: 'Pending = Received + Pending (last week) - Tested',
+          description:
+            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
           content: {
             left: [
               {
@@ -81,45 +87,14 @@ export const oppBrukerRules = {
                 operator: '-',
                 isPassDataNeeded: false,
               },
-            ],
-            operator: '=',
-          },
-        },
-        {
-          name: ValidationTargets.CHECK4,
-          description: 'Failed = ∑Rejection',
-          content: {
-            left: [
               {
                 field: '222',
                 operator: '+',
                 isPassDataNeeded: false,
               },
-            ],
-            right: [
               {
-                field: '208',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '209',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '210',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '211',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '212',
-                operator: '+',
+                field: '302',
+                operator: '-',
                 isPassDataNeeded: false,
               },
             ],
@@ -255,7 +230,7 @@ export const oppBrukerRules = {
     },*/
     {
       subject: 'Vl Plasma VIH2',
-      field_list: [219, 225, 221, 223, 213, 214, 215, 216, 217],
+      field_list: [219, 225, 221, 223, 213, 214, 215, 216, 217, 303],
       checks: [
         {
           name: ValidationTargets.CHECK1,
@@ -285,7 +260,7 @@ export const oppBrukerRules = {
         },
         {
           name: ValidationTargets.CHECK2,
-          description: 'Tested >= Failed',
+          description: 'Tested >= Failed (Pending retest + Rejected)',
           content: {
             left: [
               {
@@ -300,13 +275,19 @@ export const oppBrukerRules = {
                 operator: '+',
                 isPassDataNeeded: false,
               },
+              {
+                field: '303',
+                operator: '+',
+                isPassDataNeeded: false,
+              },
             ],
             operator: '>=',
           },
         },
         {
           name: ValidationTargets.CHECK3,
-          description: 'Pending = Received + Pending (last week) - Tested',
+          description:
+            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
           content: {
             left: [
               {
@@ -331,45 +312,14 @@ export const oppBrukerRules = {
                 operator: '-',
                 isPassDataNeeded: false,
               },
-            ],
-            operator: '=',
-          },
-        },
-        {
-          name: ValidationTargets.CHECK4,
-          description: 'Failed = ∑Rejection',
-          content: {
-            left: [
               {
                 field: '223',
                 operator: '+',
                 isPassDataNeeded: false,
               },
-            ],
-            right: [
               {
-                field: '213',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '214',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '215',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '216',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '217',
-                operator: '+',
+                field: '303',
+                operator: '-',
                 isPassDataNeeded: false,
               },
             ],

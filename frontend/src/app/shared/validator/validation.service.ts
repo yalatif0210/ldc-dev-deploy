@@ -7,10 +7,10 @@ import { ReportService } from '@shared/services/report.service';
 
 export enum ValidationTargets {
   CHECK1 = 'Received + Pending (last week) >= Tested',
-  CHECK2 = 'Tested >= Failed',
-  CHECK3 = 'Pending = Received + Pending (last week) - Tested',
-  CHECK4 = 'Failed = ∑Rejection',
+  CHECK2 = 'Tested >= Failed (Pending retest + Rejected)',
+  CHECK3 = 'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
 }
+
 
 @Injectable({ providedIn: 'root' })
 export class ValidationService extends SharedService {
@@ -65,7 +65,7 @@ export class ValidationService extends SharedService {
     account_id: number,
     equipment_id: number
   ) {
-    console.log('validator_schema', validator_schema);
+    console.log('validator_schema - validation.service.ts:68', validator_schema);
     return this.last_report(account_id, equipment_id).pipe(
       map(response => {
         const last_report = response.data.reportByAccountAndEquipment;
@@ -77,7 +77,7 @@ export class ValidationService extends SharedService {
           }
         }
 
-        console.log('ok', validation_data);
+        console.log('ok - validation.service.ts:80', validation_data);
         return validation_data; // 👉 retourné à l'observable
       })
     );
@@ -123,9 +123,9 @@ export class ValidationService extends SharedService {
         subject: rule.subject,
         values: [],
       };
-      console.log('form_value:', form_value);
+      console.log('form_value: - validation.service.ts:126', form_value);
       const field__list_data = this.lab_value_extraction(form_value, rule.field_list);
-      console.log('field__list_data:', field__list_data);
+      console.log('field__list_data: - validation.service.ts:128', field__list_data);
       for (const check of rule.checks) {
         result.values.push({
           name: check.name,
@@ -217,7 +217,7 @@ export class ValidationService extends SharedService {
     const lab_all_valid = lab_validation_data.every((result: any) =>
       result.values.every((value: any) => value.isValid)
     );
-    console.log('XXX>>>', pharm_validation_data);
+    console.log('XXX>>> - validation.service.ts:220', pharm_validation_data);
     const pharm_all_valid = pharm_validation_data.every(
       (item: any) =>
         item.initial +

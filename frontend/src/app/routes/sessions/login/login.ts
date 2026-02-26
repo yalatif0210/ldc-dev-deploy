@@ -33,7 +33,6 @@ const PUBLIC_ROUTE_INIT = 'zver/public/report/init';
   ],
 })
 export class Login {
-
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
@@ -67,10 +66,13 @@ export class Login {
       .pipe(filter(authenticated => authenticated))
       .subscribe({
         next: () => {
-          const isAdmin = this.auth.isUserAdminOrSupervisor(this.auth.userRoleByToken);
-          this.redirection = isAdmin ? ADMIN_ROUTE_INIT : PUBLIC_ROUTE_INIT;
-          if(this.redirection){
-            this.router.navigateByUrl(this.redirection);
+          const userRoleByToken = this.auth.userRoleByToken;
+          if (userRoleByToken !== undefined && userRoleByToken !== null) {
+            const isAdmin = this.auth.isUserAdminOrSupervisor(userRoleByToken);
+            this.redirection = isAdmin ? ADMIN_ROUTE_INIT : PUBLIC_ROUTE_INIT;
+            if (this.redirection) {
+              this.router.navigateByUrl(this.redirection);
+            }
           }
         },
         error: (errorRes: HttpErrorResponse) => {

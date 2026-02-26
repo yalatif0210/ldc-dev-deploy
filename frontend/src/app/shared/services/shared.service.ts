@@ -36,17 +36,17 @@ export class SharedService extends GraphqlService {
     super();
   }
 
-  @Cacheable({ storageStrategy: LocalStorageStrategy, maxAge: 60 * 60 * 1000 })
+
   getUserRolesFromRemote(): Observable<any> {
     return this.query(UserModel.userRole());
   }
 
-  @Cacheable({ storageStrategy: LocalStorageStrategy, maxAge: 60 * 60 * 1000 })
+
   getRegion(): Observable<any> {
     return this.query(RegionModel.regions());
   }
 
-  @Cacheable({ storageStrategy: LocalStorageStrategy, maxAge: 60 * 60 * 1000 })
+
   getStructure(): Observable<any> {
     return this.query(StructureModel.structures());
   }
@@ -67,12 +67,12 @@ export class SharedService extends GraphqlService {
     return this.authService.isUserAdminOrSupervisor(this.authService.userRoleByToken);
   }
 
-  @Cacheable({ storageStrategy: LocalStorageStrategy, maxAge: 60 * 60 * 1000 })
+
   getAccountEquipments(): Observable<any> {
     return this.query(AccountModel.accountEquipment(), { id: this.authService.userAccountId });
   }
 
-  @Cacheable({ storageStrategy: LocalStorageStrategy, maxAge: 60 * 60 * 1000 })
+
   getEquipmentById(id: number): Observable<any> {
     return this.query(EquipmentModel.equipmentById(id));
   }

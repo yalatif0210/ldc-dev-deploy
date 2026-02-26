@@ -1,12 +1,11 @@
 import { ValidationTargets } from '../validation.service';
 
-
 export const genexpertRules = {
   target: 'GENEXPERT',
   rules: [
     {
       subject: 'Vl Plasma VIH1',
-      field_list: [173, 179, 175, 177, 163, 164, 165, 166, 167],
+      field_list: [173, 179, 175, 177, 163, 164, 165, 166, 167, 300],
       checks: [
         {
           name: ValidationTargets.CHECK1,
@@ -36,7 +35,7 @@ export const genexpertRules = {
         },
         {
           name: ValidationTargets.CHECK2,
-          description: 'Tested >= Failed',
+          description: 'Tested >= Failed (Pending retest + Rejected)',
           content: {
             left: [
               {
@@ -51,13 +50,19 @@ export const genexpertRules = {
                 operator: '+',
                 isPassDataNeeded: false,
               },
+              {
+                field: '300',
+                operator: '+',
+                isPassDataNeeded: false,
+              },
             ],
             operator: '>=',
           },
         },
         {
           name: ValidationTargets.CHECK3,
-          description: 'Pending = Received + Pending (last week) - Tested',
+          description:
+            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
           content: {
             left: [
               {
@@ -82,45 +87,14 @@ export const genexpertRules = {
                 operator: '-',
                 isPassDataNeeded: false,
               },
-            ],
-            operator: '=',
-          },
-        },
-        {
-          name: ValidationTargets.CHECK4,
-          description: 'Failed = ∑Rejection',
-          content: {
-            left: [
               {
                 field: '177',
                 operator: '+',
                 isPassDataNeeded: false,
               },
-            ],
-            right: [
               {
-                field: '163',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '164',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '165',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '166',
-                operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '167',
-                operator: '+',
+                field: '300',
+                operator: '-',
                 isPassDataNeeded: false,
               },
             ],
