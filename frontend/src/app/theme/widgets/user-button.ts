@@ -50,7 +50,7 @@ export class UserButton implements OnInit {
   user_name = '';
 
   setusername(name: string) {
-    this.user_name = name.split(' ')[0];
+    this.user_name = name?.split(' ')[0] || '';
   }
 
   ngOnInit(): void {
@@ -58,7 +58,7 @@ export class UserButton implements OnInit {
     this.auth
       .user()
       .pipe(
-        tap(user => {
+        tap((user: any) => {
           this.user = user;
           this.setusername(user.name!);
         }),
