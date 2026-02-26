@@ -62,7 +62,7 @@ export const mpimaRules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
+            'Pending = Received + Pending (last week) - Tested + Pending retest',
           content: {
             left: [
               {
@@ -90,11 +90,6 @@ export const mpimaRules = {
               {
                 field: '3',
                 operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '317',
-                operator: '-',
                 isPassDataNeeded: false,
               },
             ],

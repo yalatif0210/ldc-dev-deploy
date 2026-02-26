@@ -62,7 +62,7 @@ export const abbottRules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
+            'Pending = Received + Pending (last week) - Tested + Pending retest',
           content: {
             left: [
               {
@@ -90,11 +90,6 @@ export const abbottRules = {
               {
                 field: '267',
                 operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '304',
-                operator: '-',
                 isPassDataNeeded: false,
               },
             ],
@@ -162,7 +157,7 @@ export const abbottRules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
+            'Pending = Received + Pending (last week) - Tested + Pending retest',
           content: {
             left: [
               {
@@ -190,11 +185,6 @@ export const abbottRules = {
               {
                 field: '273',
                 operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '316',
-                operator: '-',
                 isPassDataNeeded: false,
               },
             ],
@@ -262,7 +252,7 @@ export const abbottRules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
+            'Pending = Received + Pending (last week) - Tested + Pending retest',
           content: {
             left: [
               {
@@ -291,12 +281,7 @@ export const abbottRules = {
                 field: '268',
                 operator: '+',
                 isPassDataNeeded: false,
-              },
-              {
-                field: '305',
-                operator: '-',
-                isPassDataNeeded: false,
-              },
+              }
             ],
             operator: '=',
           },

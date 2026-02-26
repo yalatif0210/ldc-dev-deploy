@@ -1,21 +1,21 @@
 @if(data.transactionType === 'NOTIFICATION') {
-<h2 mat-dialog-title>ALERTE - {{data.data.emitter.name}}</h2>
+<h2 mat-dialog-title>ALERTE - {{data?.data?.emitter.name}}</h2>
 }@else {
-<h2 mat-dialog-title>Transfert IN de {{data.data.origin.name}}</h2>
+<h2 mat-dialog-title>Transfert IN de {{data?.data?.origin.name}}</h2>
 } @if(data.transactionType === 'NOTIFICATION'){
 <div mat-dialog-content>
   <h4 style="margin-left: 0px" class="f-w-300">
     <p>
       <b>Equipement :</b>
-      {{ data.data.equipment.name }}
+      {{ data?.data?.equipment.name }}
     </p>
     <p>
       <b>Intrant :</b>
-      {{ data.data.intrant.name }}
+      {{ data?.data?.intrant.name }}
     </p>
     <p>
       <b>Bésoin :</b>
-      {{ data.data.quantity }} unités
+      {{ data?.data?.quantity }} unités
     </p>
     <p><b>Quantité à transférer :</b></p>
     <form [formGroup]="transfert!" appearance="outline">

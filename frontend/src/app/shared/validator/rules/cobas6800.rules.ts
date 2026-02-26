@@ -62,7 +62,7 @@ export const cobas6800Rules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
+            'Pending = Received + Pending (last week) - Tested + Pending retest',
           content: {
             left: [
               {
@@ -92,11 +92,7 @@ export const cobas6800Rules = {
                 operator: '+',
                 isPassDataNeeded: false,
               },
-              {
-                field: '298',
-                operator: '-',
-                isPassDataNeeded: false,
-              },
+
             ],
             operator: '=',
           },
@@ -287,7 +283,7 @@ export const cobas6800Rules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
+            'Pending = Received + Pending (last week) - Tested + Pending retest',
           content: {
             left: [
               {
@@ -315,11 +311,6 @@ export const cobas6800Rules = {
               {
                 field: '133',
                 operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '299',
-                operator: '-',
                 isPassDataNeeded: false,
               },
             ],

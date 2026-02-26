@@ -97,7 +97,7 @@ export class AppTable implements OnInit, OnDestroy {
   }
 
   paginate<T>(pageNumber: number) {
-    const array = this.datas.datas.slice();
+    const array = this.datas?.datas?.slice();
     const start = (pageNumber - 1) * this.pageSize;
     const end = start + this.pageSize;
     return array.slice(start, end);
@@ -108,7 +108,7 @@ export class AppTable implements OnInit, OnDestroy {
   }
 
   calculateTotalPages() {
-    this.totalPages = Math.ceil(this.datas.datas.length / this.pageSize);
+    this.totalPages = Math.ceil(this.datas?.datas?.length / this.pageSize);
   }
 
   get arrayFromTotalPages() {

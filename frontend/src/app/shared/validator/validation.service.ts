@@ -8,7 +8,7 @@ import { ReportService } from '@shared/services/report.service';
 export enum ValidationTargets {
   CHECK1 = 'Received + Pending (last week) >= Tested',
   CHECK2 = 'Tested >= Failed (Pending retest + Rejected)',
-  CHECK3 = 'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
+  CHECK3 = 'Pending = Received + Pending (last week) - Tested + Pending retest',
 }
 
 

@@ -62,7 +62,7 @@ export const cobas4800Rules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
+            'Pending = Received + Pending (last week) - Tested + Pending retest',
           content: {
             left: [
               {
@@ -90,11 +90,6 @@ export const cobas4800Rules = {
               {
                 field: '42',
                 operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '306',
-                operator: '-',
                 isPassDataNeeded: false,
               },
             ],
@@ -162,7 +157,7 @@ export const cobas4800Rules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
+            'Pending = Received + Pending (last week) - Tested + Pending retest',
           content: {
             left: [
               {
@@ -190,11 +185,6 @@ export const cobas4800Rules = {
               {
                 field: '48',
                 operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '311',
-                operator: '-',
                 isPassDataNeeded: false,
               },
             ],
@@ -262,7 +252,7 @@ export const cobas4800Rules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
+            'Pending = Received + Pending (last week) - Tested + Pending retest',
           content: {
             left: [
               {
@@ -290,11 +280,6 @@ export const cobas4800Rules = {
               {
                 field: '43',
                 operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '307',
-                operator: '-',
                 isPassDataNeeded: false,
               },
             ],

@@ -40,7 +40,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:4200"));
+        config.setAllowedOrigins(List.of(
+                "http://localhost:3000", 
+                "http://localhost:4200",
+                "http://207.180.209.55",
+                "https://207.180.209.55"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true); // Important if you're using cookies or authorization headers
@@ -51,14 +55,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager)
+            throws Exception {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/graphql", "/api-docs", "/api/**", "/swagger-ui/**", "/api-docs/**"))
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/graphql", "/api-docs", "/api/**", "/ws/**",
+                        "/swagger-ui/**", "/api-docs/**"))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//        Set permissions on endpoints
+                // Set permissions on endpoints
                 .authorizeHttpRequests(auth -> auth
-//            our public endpoints
+                        // our public endpoints
                         .requestMatchers(HttpMethod.POST, "/api/auth/signup/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login/**").permitAll()
                         .requestMatchers("/graphiql").permitAll()
@@ -76,20 +82,26 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .authenticationManager(authenticationManager)
 
-//        We need jwt filter before the UsernamePasswordAuthenticationFilter.
-//        Since we need every request to be authenticated before going through spring security filter.
-//        (UsernamePasswordAuthenticationFilter creates a UsernamePasswordAuthenticationToken from a username and password that are submitted in the HttpServletRequest.)
+                // We need jwt filter before the UsernamePasswordAuthenticationFilter.
+                // Since we need every request to be authenticated before going through spring
+                // security filter.
+                // (UsernamePasswordAuthenticationFilter creates a
+                // UsernamePasswordAuthenticationToken from a username and password that are
+                // submitted in the HttpServletRequest.)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        AuthenticationManagerBuilder authenticationManagerBuilder = http
+                .getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
         return authenticationManagerBuilder.build();
     }
 }
 
-// CORS(Cross-origin resource sharing) is just to avoid if you run javascript across different domains like if you execute JS on http://testpage.com and access http://anotherpage.com
+// CORS(Cross-origin resource sharing) is just to avoid if you run javascript
+// across different domains like if you execute JS on http://testpage.com and
+// access http://anotherpage.com
 // CSRF(Cross-Site Request Forgery)

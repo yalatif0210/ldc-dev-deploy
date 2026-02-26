@@ -16,11 +16,14 @@ public class CorsConfig {
             public void addCorsMappings(@NotNull CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedMethods("*")
-                        .allowedOrigins("http://localhost:3000", "http://localhost:4200")
+                        .allowedOrigins(
+                                "http://localhost:3000",
+                                "http://localhost:4200",
+                                "http://207.180.209.55",
+                                "https://207.180.209.55")
                         .allowedHeaders("*")// ✅ ton front Angular
                         .allowCredentials(true);
             }
         };
     }
 }
-

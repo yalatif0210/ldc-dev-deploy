@@ -62,7 +62,7 @@ export const oppBrukerRules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
+            'Pending = Received + Pending (last week) - Tested + Pending retest',
           content: {
             left: [
               {
@@ -90,11 +90,6 @@ export const oppBrukerRules = {
               {
                 field: '222',
                 operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '302',
-                operator: '-',
                 isPassDataNeeded: false,
               },
             ],
@@ -287,7 +282,7 @@ export const oppBrukerRules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest - Rejected',
+            'Pending = Received + Pending (last week) - Tested + Pending retest',
           content: {
             left: [
               {
@@ -315,11 +310,6 @@ export const oppBrukerRules = {
               {
                 field: '223',
                 operator: '+',
-                isPassDataNeeded: false,
-              },
-              {
-                field: '303',
-                operator: '-',
                 isPassDataNeeded: false,
               },
             ],

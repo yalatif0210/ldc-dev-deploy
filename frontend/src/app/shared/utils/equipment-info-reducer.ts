@@ -35,7 +35,7 @@ interface EquipmentData {
  */
 function getUniqueInformationUnits(jsonData: EquipmentData): InformationUnit[] {
   return Array.from(
-    jsonData.data.equipmentByName.informationList
+    jsondata?.data?.equipmentByName.informationList
       .reduce((map, item) => {
         const unit = item.informationUnit;
         return map.has(unit.id) ? map : map.set(unit.id, unit);
@@ -46,7 +46,7 @@ function getUniqueInformationUnits(jsonData: EquipmentData): InformationUnit[] {
 
 function getUniqueInformationUnitsSorted(jsonData: EquipmentData): InformationUnit[] {
   return Array.from(
-    jsonData.data.equipmentByName.informationList.reduce((map, item) => {
+    jsondata?.data?.equipmentByName.informationList.reduce((map, item) => {
       const unit = item.informationUnit;
       return map.has(unit.id) ? map : map.set(unit.id, unit);
     }, new Map<string, InformationUnit>()).values()

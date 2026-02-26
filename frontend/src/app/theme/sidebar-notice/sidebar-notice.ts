@@ -262,7 +262,7 @@ export class DialogNotice extends FormBaseComponent implements OnInit {
   }
 
   get transactionIntrant() {
-    return this.service.getTransactactionIntrant(this.data.data)[0];
+    return this.service.getTransactactionIntrant(this.data?.data?)[0];
   }
 
   handleResolveNotification(data: any, isTransfert = false , approved = true) {
@@ -271,12 +271,12 @@ export class DialogNotice extends FormBaseComponent implements OnInit {
     this.service.userInformation().subscribe(userAccount => {
       (isTransfert
         ? this.service.updateTransfert({
-            id: data.data.id,
+            id: data?.data?.id,
             isApproved: approved,
             isRejected: !approved,
           })
         : this.service.updateNotification({
-            id: data.data.id,
+            id: data?.data?.id,
             isResolved: approved,
             isRejected: !approved,
           })
@@ -285,11 +285,11 @@ export class DialogNotice extends FormBaseComponent implements OnInit {
           if (!isTransfert) {
             this.service.createTransfer({
               origin_id: Number(userAccount.data.account.structures[0].id),
-              destination_id: Number(data.data.emitter.id),
+              destination_id: Number(data?.data?.emitter.id),
               sanguine_product_transaction_input_list: [],
               medicines_transaction_input_list: [
                 {
-                  intrant_id: Number(data.data.intrant.id),
+                  intrant_id: Number(data?.data?.intrant.id),
                   quantity: formData.transfert_target,
                 },
               ],
