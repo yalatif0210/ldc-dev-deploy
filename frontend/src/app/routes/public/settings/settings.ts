@@ -24,11 +24,12 @@ import { SynthesisService } from '@shared/services/synthesis.service';
 import { ReportHistoryService } from '@shared/services/report-history.service';
 
 const SPECIFIC_PRIMARY_INTRANT = 1;
+const CONSOMMABLES_GENERAUX = 8;
 
 @Component({
   selector: '[app-public-settings]',
   templateUrl: './settings.html',
-  styleUrls: ['./settings.scss', '../report/lab-report/lab.scss'] ,
+  styleUrls: ['./settings.scss', '../report/lab-report/lab.scss'],
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -68,11 +69,13 @@ export class PublicSettings extends FormBaseComponent implements OnInit, OnDestr
 
   ngOnInit(): void {
     forkJoin([this.reportHistoryService.getEquipments()]).subscribe(([response]) => {
-      this.equipments = response.data.account.structures[0].equipments;
+      this.equipments = response.data.account.structures[0].equipments.filter((e: any) =>
+        Number(e.id) !== CONSOMMABLES_GENERAUX
+      );
       this.structure = response.data.account.structures[0];
       //this.service.setList(this.service.periodToList(response.data.periods as any[]));
     });
-    this.home_form!.get('equipment')?.valueChanges.subscribe(selectedEquipmentId => {
+    this.home_form!.get('equipment')?.valueChanges.subscribe((selectedEquipmentId: any) => {
       this.onEquipmentChange(this.structure.id, selectedEquipmentId);
     });
   }
@@ -81,7 +84,7 @@ export class PublicSettings extends FormBaseComponent implements OnInit, OnDestr
     this.service
       .getCmmConfig({ structureId: structure_Id, equipmentId: Number(equipmentId) })
       .subscribe((config: any) => {
-        console.log('cmmConfig  synthesis.ts:177 - settings.ts:84', config);
+        console.log('cmmConfig  synthesis.ts:177 - settings.ts:87', config);
         if (
           config &&
           config.data &&
@@ -94,19 +97,19 @@ export class PublicSettings extends FormBaseComponent implements OnInit, OnDestr
           //this.lockedButton = !confirm;
           if (confirm) {
             this.cmmConfigInstance = null;
-            this.service.getEquipmentById(equipmentId).subscribe(equipment => {
+            this.service.getEquipmentById(equipmentId).subscribe((equipment: any) => {
               if (equipment && equipment.data) {
                 this.equipmentInfo = equipment.data.equipment;
                 this.equipmentIntrants = this.equipmentInfo.intrants.filter(
                   (e: any) => Number(e.intrantType.id) === SPECIFIC_PRIMARY_INTRANT
                 ) as any[];
               }
-              console.log('equipment  synthesis.ts:528 - settings.ts:104', equipment);
+              console.log('equipment  synthesis.ts:528 - settings.ts:107', equipment);
             });
           } else {
             return;
           }
-        }else{
+        } else {
           this.equipmentIntrants = null;
           this.cmmConfigInstance = config?.data?.intrantCmmConfigByStructureAndEquipment;
         }
@@ -114,6 +117,9 @@ export class PublicSettings extends FormBaseComponent implements OnInit, OnDestr
   }
 
   onEquipmentChange(structureId: any, equipmentId: any) {
+    this.disabledConfirm = false;
+    this.equipmentIntrants = null;
+    this.cmmConfigInstance = null;
     this.handleCmmInstance(structureId, equipmentId);
   }
 
@@ -122,7 +128,7 @@ export class PublicSettings extends FormBaseComponent implements OnInit, OnDestr
   }
 
   onConfirm() {
-    console.log('pharmInputs onConfirm  synthesis.ts:533 - settings.ts:125', this.pharmInputs);
+    console.log('pharmInputs onConfirm  synthesis.ts:533 - settings.ts:131', this.pharmInputs);
     this.service
       .handleCreateCmmConfig(
         this.service.handleCmmInputToDTO(
@@ -130,8 +136,8 @@ export class PublicSettings extends FormBaseComponent implements OnInit, OnDestr
           this.pharmInputs
         )
       )
-      .subscribe(r => {
-        console.log('CMM config created  synthesis.ts:542 - settings.ts:134', r);
+      .subscribe((r: any) => {
+        console.log('CMM config created  synthesis.ts:542 - settings.ts:140', r);
         this.disabledConfirm = true;
         this.toast.success('CMM configurées avec succès.');
       });
