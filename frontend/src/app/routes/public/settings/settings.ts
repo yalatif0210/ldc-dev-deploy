@@ -128,7 +128,7 @@ export class PublicSettings extends FormBaseComponent implements OnInit, OnDestr
   }
 
   onConfirm() {
-    console.log('pharmInputs onConfirm  synthesis.ts:533 - settings.ts:131', this.pharmInputs);
+    this.disabledConfirm = true;
     this.service
       .handleCreateCmmConfig(
         this.service.handleCmmInputToDTO(
@@ -138,7 +138,6 @@ export class PublicSettings extends FormBaseComponent implements OnInit, OnDestr
       )
       .subscribe((r: any) => {
         console.log('CMM config created  synthesis.ts:542 - settings.ts:140', r);
-        this.disabledConfirm = true;
         this.toast.success('CMM configurées avec succès.');
       });
   }
