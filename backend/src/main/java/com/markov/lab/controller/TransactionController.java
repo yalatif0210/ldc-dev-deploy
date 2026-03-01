@@ -91,7 +91,7 @@ class TransactionController {
     public List<Transaction> transactionByDateRange(@Argument @Valid @RequestBody TransactionByPeriodInput request) throws ParseException {
         return transactionRepository.findByDateRange(
                 JavaDateFormater.formatDate(request.start_date()).atStartOfDay(ZoneId.systemDefault()).toInstant(),
-                JavaDateFormater.formatDate(request.end_date()).atStartOfDay(ZoneId.systemDefault()).toInstant()
+                JavaDateFormater.formatDate(request.end_date()).plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()
         );
     }
 
