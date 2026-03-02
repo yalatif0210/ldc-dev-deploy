@@ -48,6 +48,11 @@ public class Equipment {
     @ToString.Exclude
     private List<Transaction> transactionsList;
 
+    @OneToMany(mappedBy = "equipment_destinataire")
+    @JsonIgnore
+    @ToString.Exclude
+    private List<Transaction> transactionsListDestinataire;
+
     {
         reports = new ArrayList<>();
     }
@@ -69,6 +74,6 @@ public class Equipment {
     }
 
     public List<Information> getInformationList() {
-        return informationList.stream().filter(e-> e.getIsActive() == true).toList();
+        return informationList.stream().filter(e -> e.getIsActive() == true).toList();
     }
 }

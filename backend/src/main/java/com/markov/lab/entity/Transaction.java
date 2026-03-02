@@ -33,6 +33,10 @@ public class Transaction {
     private Equipment equipment;
 
     @ManyToOne
+    @JoinColumn(name = "equipment_destinataire_id")
+    private Equipment equipment_destinataire;
+
+    @ManyToOne
     @JoinColumn(name = "destination_id")
     private Structure destination;
 

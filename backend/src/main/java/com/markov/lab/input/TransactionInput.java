@@ -6,6 +6,7 @@ public record TransactionInput(
         long origin_id,
         long destination_id,
         long equipment_id,
+        long equipment_destinataire_id,
         List<SanguineProductTransactionInput> sanguine_product_transaction_input_list,
         List<MedicinesTransactionInput> medicines_transaction_input_list
 ) {

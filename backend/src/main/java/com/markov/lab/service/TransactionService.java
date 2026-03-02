@@ -44,6 +44,7 @@ public class TransactionService {
         structureRepository.findById(input.origin_id()).ifPresent(transaction::setOrigin);
         structureRepository.findById(input.destination_id()).ifPresent(transaction::setDestination);
         equipmentRepository.findById(input.equipment_id()).ifPresent(transaction::setEquipment);
+        equipmentRepository.findById(input.equipment_destinataire_id()).ifPresent(transaction::setEquipment_destinataire);
         Transaction savedTransaction = transactionRepository.save(transaction);
 
         if (!input.sanguine_product_transaction_input_list().isEmpty()) {
