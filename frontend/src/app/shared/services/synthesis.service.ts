@@ -413,14 +413,14 @@ export class SynthesisService extends SharedService {
     return e;
   }
 
- handleAvailableStock(elt: any, total_available_stock: any){
-  const factor = elt.intrant.sku === elt.intrant.primary_sku ? 1 : elt.intrant.roundFactor;
-  return elt.intrant.code === 4040140
-            ? total_available_stock > 2
-              ? Math.ceil(total_available_stock / factor || 0)
-              : (total_available_stock / factor || 0).toFixed(0)
-            : (total_available_stock / factor || 0).toFixed(0);
- }
+  handleAvailableStock(elt: any, total_available_stock: any) {
+    const factor = elt.intrant.sku === elt.intrant.primary_sku ? 1 : elt.intrant.roundFactor;
+    return elt.intrant.code === 4040140
+      ? total_available_stock > 2
+        ? Math.ceil(total_available_stock / factor || 0)
+        : (total_available_stock / factor || 0).toFixed(0)
+      : (total_available_stock / factor || 0).toFixed(0);
+  }
 
   handleKit(elt: any) {
     if (elt.intrant.sku === elt.intrant.primary_sku) {
@@ -507,7 +507,14 @@ export class SynthesisService extends SharedService {
         value: data.value,
       });
     });
-    return this.setLabInput(labformControls);
+
+    const aggregated = labformControls.reduce((acc, { key, value }) => {
+      acc[key] = (acc[key] || 0) + value;
+      return acc;
+    }, {});
+
+    return aggregated;
+    //return this.setLabInput(labformControls);
   }
 
   setLabInput(items: any) {

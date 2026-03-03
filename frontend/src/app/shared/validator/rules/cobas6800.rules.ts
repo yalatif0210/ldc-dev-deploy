@@ -5,11 +5,11 @@ export const cobas6800Rules = {
   rules: [
     {
       subject: 'Vl Plasma VIH1',
-      field_list: [128, 134, 130, 132, 118, 119, 120, 121, 122, 298],
+      field_list: [128, 134, 130, 132, 118, 119, 120, 121, 122, 298, 'Vl Plasma VIH1'],
       checks: [
         {
           name: ValidationTargets.CHECK1,
-          description: 'Received + Pending (last week) >= Tested',
+          description: 'Pending (last week) + Received + Adjustment >= Tested',
           content: {
             left: [
               {
@@ -21,6 +21,11 @@ export const cobas6800Rules = {
                 field: '134',
                 operator: '+',
                 isPassDataNeeded: true,
+              },
+              {
+                field: 'Vl Plasma VIH1',
+                operator: '+',
+                isPassDataNeeded: false,
               },
             ],
             right: [
@@ -62,7 +67,7 @@ export const cobas6800Rules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest',
+            'Pending (current week) = Pending (last week) + Received + Adjustment - Tested + Pending retest',
           content: {
             left: [
               {
@@ -83,6 +88,11 @@ export const cobas6800Rules = {
                 isPassDataNeeded: true,
               },
               {
+                field: 'Vl Plasma VIH1',
+                operator: '+',
+                isPassDataNeeded: false,
+              },
+              {
                 field: '130',
                 operator: '-',
                 isPassDataNeeded: false,
@@ -92,7 +102,6 @@ export const cobas6800Rules = {
                 operator: '+',
                 isPassDataNeeded: false,
               },
-
             ],
             operator: '=',
           },
@@ -105,7 +114,7 @@ export const cobas6800Rules = {
       checks: [
         {
           name: ValidationTargets.CHECK1,
-          description: 'Received + Pending (last week) >= Tested',
+          description: 'Pending (last week) + Received + Adjustment >= Tested',
           content: {
             left: [
               {
@@ -226,11 +235,11 @@ export const cobas6800Rules = {
     },*/
     {
       subject: 'VL PSC',
-      field_list: [129, 135, 131, 133, 123, 124, 125, 126, 127, 299],
+      field_list: [129, 135, 131, 133, 123, 124, 125, 126, 127, 299, 'Vl PSC'],
       checks: [
         {
           name: ValidationTargets.CHECK1,
-          description: 'Received + Pending (last week) >= Tested',
+          description: 'Pending (last week) + Received + Adjustment >= Tested',
           content: {
             left: [
               {
@@ -242,6 +251,11 @@ export const cobas6800Rules = {
                 field: '135',
                 operator: '+',
                 isPassDataNeeded: true,
+              },
+              {
+                field: 'Vl PSC',
+                operator: '+',
+                isPassDataNeeded: false,
               },
             ],
             right: [
@@ -283,7 +297,7 @@ export const cobas6800Rules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest',
+            'Pending (current week) = Pending (last week) + Received + Adjustment - Tested + Pending retest',
           content: {
             left: [
               {
@@ -302,6 +316,11 @@ export const cobas6800Rules = {
                 field: '135',
                 operator: '+',
                 isPassDataNeeded: true,
+              },
+              {
+                field: 'Vl PSC',
+                operator: '+',
+                isPassDataNeeded: false,
               },
               {
                 field: '131',

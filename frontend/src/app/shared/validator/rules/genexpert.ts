@@ -5,11 +5,11 @@ export const genexpertRules = {
   rules: [
     {
       subject: 'Vl Plasma VIH1',
-      field_list: [173, 179, 175, 177, 163, 164, 165, 166, 167, 300],
+      field_list: [173, 179, 175, 177, 163, 164, 165, 166, 167, 300, 'Vl Plasma VIH1'],
       checks: [
         {
           name: ValidationTargets.CHECK1,
-          description: 'Received + Pending (last week) >= Tested',
+          description: 'Pending (last week) + Received + Adjustment >= Tested',
           content: {
             left: [
               {
@@ -21,6 +21,11 @@ export const genexpertRules = {
                 field: '179',
                 operator: '+',
                 isPassDataNeeded: true,
+              },
+              {
+                field: 'Vl Plasma VIH1',
+                operator: '+',
+                isPassDataNeeded: false,
               },
             ],
             right: [
@@ -62,7 +67,7 @@ export const genexpertRules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest',
+            'Pending (current week) = Pending (last week) + Received + Adjustment - Tested + Pending retest',
           content: {
             left: [
               {
@@ -81,6 +86,11 @@ export const genexpertRules = {
                 field: '179',
                 operator: '+',
                 isPassDataNeeded: true,
+              },
+              {
+                field: 'Vl Plasma VIH1',
+                operator: '+',
+                isPassDataNeeded: false,
               },
               {
                 field: '175',
@@ -104,7 +114,7 @@ export const genexpertRules = {
       checks: [
         {
           name: ValidationTargets.CHECK1,
-          description: 'Received + Pending (last week) >= Tested',
+          description: 'Pending (last week) + Received + Adjustment >= Tested',
           content: {
             left: [
               {
@@ -229,7 +239,7 @@ export const genexpertRules = {
       checks: [
         {
           name: ValidationTargets.CHECK1,
-          description: 'Received + Pending (last week) >= Tested',
+          description: 'Pending (last week) + Received + Adjustment >= Tested',
           content: {
             left: [
               {

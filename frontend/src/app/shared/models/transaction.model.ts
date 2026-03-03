@@ -118,6 +118,10 @@ static TRANSACTION_BY_DATE_RANGE = `query($request: TransactionByPeriodInput){
       id
       name
     }
+    equipment_destinataire{
+      id
+      name
+    }
     sanguineProductTransactions{
       id
       sanguineProduct{

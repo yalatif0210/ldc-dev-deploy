@@ -47,6 +47,7 @@ export class SidebarNotice extends FormBaseComponent implements OnInit, OnDestro
   sanguineProducts: any[] = [];
   intrants: any[] = [];
   equipments: any[] = [];
+  all_equipements: any[] = [];
   strutctures: any[] = [];
   notifications: any[] = [];
   notificationListFiltered = signal<any[]>([]);
@@ -59,6 +60,8 @@ export class SidebarNotice extends FormBaseComponent implements OnInit, OnDestro
   private readonly notificationService = inject(NotificationService);
   notifySubscription = Subscription.EMPTY;
   filteredStructures: any[] = [];
+  structureByEquipment: any = null;
+
   constructor() {
     super();
     this.transfert = this.buildFormFromArray([
@@ -69,6 +72,7 @@ export class SidebarNotice extends FormBaseComponent implements OnInit, OnDestro
       { key: 'destination', defaultValue: '', validators: [] },
       { key: 'intrant', defaultValue: '', validators: [] },
       { key: 'equipment', defaultValue: '', validators: [] },
+      { key: 'equipment_destinataire', defaultValue: '', validators: [] },
       { key: 'quantity', defaultValue: '', validators: [] },
     ]);
     this.notification_data = this.buildFormFromArray([
@@ -82,17 +86,25 @@ export class SidebarNotice extends FormBaseComponent implements OnInit, OnDestro
     { label: 'All' },
     { label: 'Finalisé' },
     { label: 'En Attente' },
+    { label: 'Alertes' },
+    { label: 'Transferts' },
     { label: 'Autre' },
   ];
 
-  sub_tabs = [
-    {
-      label: 'Transferts',
-    },
-    {
-      label: 'Alertes',
-    },
-  ];
+  sub_tabs = this.isUserPharmUser
+    ? [
+        {
+          label: 'Transferts',
+        },
+        {
+          label: 'Alertes',
+        },
+      ]
+    : [
+        {
+          label: 'Transferts',
+        },
+      ];
 
   tabs = this.isUserAdminOrSupervisor
     ? [
@@ -102,10 +114,10 @@ export class SidebarNotice extends FormBaseComponent implements OnInit, OnDestro
       ]
     : [
         {
-          label: 'Transactions',
+          label: 'Notifications',
         },
         {
-          label: 'Notifications',
+          label: 'Transactions',
         },
       ];
 
@@ -113,10 +125,13 @@ export class SidebarNotice extends FormBaseComponent implements OnInit, OnDestro
     return this.targeted;
   }
 
-  setNotificationListTarget(target: number) {
+  setNotificationListTarget(target: number, type = false) {
+    console.log('Setting notification list target to: - sidebar-notice.ts:129', this.notifications);
     this.notificationTargets.set(target);
     this.notificationListFiltered.set(this.service.getNotificationList(this.notifications, target));
   }
+
+
 
   get notificationList() {
     return this.notificationListFiltered();
@@ -136,9 +151,10 @@ export class SidebarNotice extends FormBaseComponent implements OnInit, OnDestro
 
   openNoticeDialog(data: any) {
     this.notificationTargets.set(0);
-    data['isUserAdminOrSupervisor'] =  this.isUserAdminOrSupervisor;
+    data['isUserAdminOrSupervisor'] = this.isUserAdminOrSupervisor;
+    data['isPharmUser'] = this.isUserPharmUser;
     this.noticeDialog.open(DialogNotice, {
-      data
+      data,
     });
   }
 
@@ -150,6 +166,7 @@ export class SidebarNotice extends FormBaseComponent implements OnInit, OnDestro
         origin_id: Number(this.userAccount.structures[0].id),
         destination_id: Number(formData.destination),
         equipment_id: Number(formData.equipment),
+        equipment_destinataire_id: Number(formData.equipment_destinataire),
         sanguine_product_transaction_input_list: [
           {
             sanguine_product_id: Number(formData.sample),
@@ -193,38 +210,48 @@ export class SidebarNotice extends FormBaseComponent implements OnInit, OnDestro
       this.service.sanguineProducts,
       this.service.getStructure(),
       this.service.getAccountEquipments(),
+      this.service.getEquipments(),
       this.service.userInformation(),
-    ]).subscribe(([sanguineProducts, structures, accountEquipments, userAccount]) => {
-      this.sanguineProducts = sanguineProducts.data.sanguineProducts;
-      this.strutctures = structures.data.structures;
-      this.equipments = accountEquipments.data.account.structures[0].equipments;
-      this.userAccount = userAccount.data.account;
-      this.notificationService.connect(
-        userAccount.data.account.structures[0].id,
-        this.isUserAdminOrSupervisor,
-        this.service.add.bind(this.service)
-      );
-      forkJoin([
-        this.service.getNotifications(),
-        this.service.getTransfers({
-          destinationId: this.userAccount.structures[0].id,
-          originId: this.userAccount.structures[0].id,
-        }),
-      ]).subscribe(([notifications, transfers]) => {
-        this.service.sortNoticesByDateDesc(
-          notifications.data.sapNotifications,
-          transfers.data.transactionsByOriginOrDestinationId,
+    ]).subscribe(
+      ([sanguineProducts, structures, accountEquipments, allEquipments, userAccount]) => {
+        this.sanguineProducts = sanguineProducts.data.sanguineProducts;
+        this.strutctures = structures.data.structures;
+        this.equipments = accountEquipments.data.account.structures[0].equipments;
+        this.all_equipements = allEquipments.data.equipments.filter((eq: any) => eq.id !== 8);
+        this.userAccount = userAccount.data.account;
+        this.notificationService.connect(
           userAccount.data.account.structures[0].id,
-          this.isUserAdminOrSupervisor
+          this.isUserAdminOrSupervisor,
+          this.service.add.bind(this.service)
         );
-      });
-    });
+        forkJoin([
+          this.service.getNotifications(),
+          this.service.getTransfers({
+            destinationId: this.userAccount.structures[0].id,
+            originId: this.userAccount.structures[0].id,
+          }),
+        ]).subscribe(([notifications, transfers]) => {
+          this.service.sortNoticesByDateDesc(
+            notifications.data.sapNotifications,
+            transfers.data.transactionsByOriginOrDestinationId,
+            userAccount.data.account.structures[0].id,
+            this.isUserAdminOrSupervisor,
+            this.isUserPharmUser
+          );
+        });
+      }
+    );
     this.transfert?.get('transfert_target')?.valueChanges.subscribe(value => {
       this.targeted = value;
     });
     this.transfert_data?.get('equipment')?.valueChanges.subscribe(value => {
       this.intrants = this.equipments.find((eq: any) => eq.id === value)?.intrants || [];
       this.filteredStructures = this.strutctures
+        .filter(item => item.equipments.some((eq: any) => eq.id === value))
+        .filter(e => e.id !== this.userAccount.structures[0].id);
+    });
+    this.transfert_data?.get('equipment_destinataire')?.valueChanges.subscribe(value => {
+      this.structureByEquipment = this.strutctures
         .filter(item => item.equipments.some((eq: any) => eq.id === value))
         .filter(e => e.id !== this.userAccount.structures[0].id);
     });
@@ -265,7 +292,7 @@ export class DialogNotice extends FormBaseComponent implements OnInit {
     return this.service.getTransactactionIntrant(this.data?.data)[0];
   }
 
-  handleResolveNotification(data: any, isTransfert = false , approved = true) {
+  handleResolveNotification(data: any, isTransfert = false, approved = true) {
     this.disable = true;
     const formData = this.transfert?.value;
     this.service.userInformation().subscribe(userAccount => {
@@ -306,7 +333,8 @@ export class DialogNotice extends FormBaseComponent implements OnInit {
               notifications.data.sapNotifications,
               transfers.data.transactionsByOriginOrDestinationId,
               userAccount.data.account.structures[0].id,
-              data.isUserAdminOrSupervisor
+              data.isUserAdminOrSupervisor,
+              data.isPharmUser
             );
           });
         }

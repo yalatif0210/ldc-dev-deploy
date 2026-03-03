@@ -75,7 +75,7 @@ export class PublicSettings extends FormBaseComponent implements OnInit, OnDestr
       this.structure = response.data.account.structures[0];
       //this.service.setList(this.service.periodToList(response.data.periods as any[]));
     });
-    this.home_form!.get('equipment')?.valueChanges.subscribe((selectedEquipmentId: any) => {
+    this.home_form!.get('equipment')?.valueChanges.subscribe(selectedEquipmentId => {
       this.onEquipmentChange(this.structure.id, selectedEquipmentId);
     });
   }
@@ -97,7 +97,7 @@ export class PublicSettings extends FormBaseComponent implements OnInit, OnDestr
           //this.lockedButton = !confirm;
           if (confirm) {
             this.cmmConfigInstance = null;
-            this.service.getEquipmentById(equipmentId).subscribe((equipment: any) => {
+            this.service.getEquipmentById(equipmentId).subscribe(equipment => {
               if (equipment && equipment.data) {
                 this.equipmentInfo = equipment.data.equipment;
                 this.equipmentIntrants = this.equipmentInfo.intrants.filter(
@@ -128,6 +128,7 @@ export class PublicSettings extends FormBaseComponent implements OnInit, OnDestr
   }
 
   onConfirm() {
+    console.log('pharmInputs onConfirm  synthesis.ts:533 - settings.ts:131', this.pharmInputs);
     this.disabledConfirm = true;
     this.service
       .handleCreateCmmConfig(
@@ -136,8 +137,8 @@ export class PublicSettings extends FormBaseComponent implements OnInit, OnDestr
           this.pharmInputs
         )
       )
-      .subscribe((r: any) => {
-        console.log('CMM config created  synthesis.ts:542 - settings.ts:140', r);
+      .subscribe(r => {
+        console.log('CMM config created  synthesis.ts:542 - settings.ts:141', r);
         this.toast.success('CMM configurées avec succès.');
       });
   }

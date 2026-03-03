@@ -5,11 +5,11 @@ export const oppBrukerRules = {
   rules: [
     {
       subject: 'VL Plasma VIH1',
-      field_list: [218, 224, 220, 222, 208, 209, 210, 211, 212, 302],
+      field_list: [218, 224, 220, 222, 208, 209, 210, 211, 212, 302, 'Vl Plasma VIH1'],
       checks: [
         {
           name: ValidationTargets.CHECK1,
-          description: 'Received + Pending (last week) >= Tested',
+          description: 'Pending (last week) + Received + Adjustment >= Tested',
           content: {
             left: [
               {
@@ -21,6 +21,11 @@ export const oppBrukerRules = {
                 field: '224',
                 operator: '+',
                 isPassDataNeeded: true,
+              },
+              {
+                field: 'Vl Plasma VIH1',
+                operator: '+',
+                isPassDataNeeded: false,
               },
             ],
             right: [
@@ -62,7 +67,7 @@ export const oppBrukerRules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest',
+            'Pending (current week) = Pending (last week) + Received + Adjustment - Tested + Pending retest',
           content: {
             left: [
               {
@@ -81,6 +86,11 @@ export const oppBrukerRules = {
                 field: '224',
                 operator: '+',
                 isPassDataNeeded: true,
+              },
+              {
+                field: 'Vl Plasma VIH1',
+                operator: '+',
+                isPassDataNeeded: false,
               },
               {
                 field: '220',
@@ -104,7 +114,7 @@ export const oppBrukerRules = {
       checks: [
         {
           name: ValidationTargets.CHECK1,
-          description: 'Received + Pending (last week) >= Tested',
+          description: 'Pending (last week) + Received + Adjustment >= Tested',
           content: {
             left: [
               {
@@ -225,11 +235,11 @@ export const oppBrukerRules = {
     },*/
     {
       subject: 'Vl Plasma VIH2',
-      field_list: [219, 225, 221, 223, 213, 214, 215, 216, 217, 303],
+      field_list: [219, 225, 221, 223, 213, 214, 215, 216, 217, 303, 'Vl Plasma VIH2'],
       checks: [
         {
           name: ValidationTargets.CHECK1,
-          description: 'Received + Pending (last week) >= Tested',
+          description: 'Pending (last week) + Received + Adjustment >= Tested',
           content: {
             left: [
               {
@@ -241,6 +251,11 @@ export const oppBrukerRules = {
                 field: '225',
                 operator: '+',
                 isPassDataNeeded: true,
+              },
+              {
+                field: 'Vl Plasma VIH2',
+                operator: '+',
+                isPassDataNeeded: false,
               },
             ],
             right: [
@@ -282,7 +297,7 @@ export const oppBrukerRules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest',
+            'Pending (current week) = Pending (last week) + Received + Adjustment - Tested + Pending retest',
           content: {
             left: [
               {
@@ -301,6 +316,11 @@ export const oppBrukerRules = {
                 field: '225',
                 operator: '+',
                 isPassDataNeeded: true,
+              },
+              {
+                field: 'Vl Plasma VIH2',
+                operator: '+',
+                isPassDataNeeded: false,
               },
               {
                 field: '221',

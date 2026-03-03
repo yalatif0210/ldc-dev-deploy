@@ -49,7 +49,7 @@ export class ReportService extends SharedService {
   createInformationsDTO(informstions: Record<string, number>, report: any = false) {
     const keys = Object.keys(informstions);
     const informationsDTO: any[] = [];
-    keys.map(key => {
+    keys.forEach(key => {
       const labActivityData_id =
         (report &&
           report.labActivityData.find((elmt: any) => elmt.information.id === key.split('unit_')[1])
@@ -62,6 +62,150 @@ export class ReportService extends SharedService {
     });
     console.log('informationsDTO - report.service.ts:63', informationsDTO);
     return informationsDTO;
+  }
+
+  handleNormalizedAdjustmentMvtForValidation(adjustment_mvt: Record<string, any>) {
+    const keys = Object.keys(adjustment_mvt);
+    const adjustment_mvt_dto: any[] = [];
+    keys.forEach(key => {
+      adjustment_mvt_dto.push({
+        id: key,
+        value: adjustment_mvt[key],
+      });
+    });
+    return adjustment_mvt_dto;
+  }
+
+  compareFeedBackDate(
+    feedBackDate: string,
+    period: { start_date: string; end_date: string }
+  ): boolean {
+    const feedbackDate = new Date(feedBackDate.split('T')[0]);
+    const startDate = new Date(period.start_date);
+    const endDate = new Date(period.end_date);
+
+    return feedbackDate >= startDate && feedbackDate <= endDate;
+  }
+
+  handleTransactions(
+    equipment_name: string,
+    transactionByDateRange: any,
+    adjustment_mvt: any,
+    period: any,
+    callback: any = null
+  ): any {
+    this.getUserInfo().subscribe(res => {
+      const transfer_mvt_out = transactionByDateRange.filter(
+        (e: any) => e.origin.id === res.structures[0].id &&
+          this.compareFeedBackDate(e.createdAt, period) &&
+          e.equipment.name === equipment_name
+      );
+      const transfer_mvt_in = transactionByDateRange.filter(
+        (e: any) =>
+          e.destination.id === res.structures[0].id &&
+          e.equipment_destinataire.name === equipment_name &&
+          this.compareFeedBackDate(e.feedbackAt, period) &&
+          e.approved == true
+      );
+      console.log('transfer_mvt_out  labreport.ts:489 - report.service.ts:110', transfer_mvt_out);
+      console.log('transfer_mvt_in  labreport.ts:490 - report.service.ts:111', transfer_mvt_in);
+      const transfer_mvt_out_result: any[] = [];
+      const transfer_mvt_in_result: any[] = [];
+
+      transfer_mvt_in.forEach((e: any) =>
+        transfer_mvt_in_result.push(...e.sanguineProductTransactions)
+      );
+
+      transfer_mvt_out.forEach((e: any) =>
+        transfer_mvt_out_result.push(...e.sanguineProductTransactions)
+      );
+      this.handleTransactionCompilation(
+        transfer_mvt_in_result,
+        transfer_mvt_out_result,
+        adjustment_mvt
+      );
+      if (callback) callback({ transfer_mvt_in, transfer_mvt_out });
+    });
+  }
+
+  handleTransactionCompilation(
+    transfer_mvt_in: any[],
+    transfer_mvt_out: any[],
+    adjustment_mvt: any
+  ) {
+    const sample = ['Vl Plasma VIH1', 'Vl Plasma VIH2', 'Vl PSC', 'EID Sample'];
+    sample.forEach((item: string) => {
+      let in_mvt_qty = 0;
+      let out_mvt_qty = 0;
+      const in_mvt = transfer_mvt_in.filter(
+        (e: any) => e.sanguineProduct.name.trim() === item.trim()
+      );
+      const out_mvt = transfer_mvt_out.filter(
+        (e: any) => e.sanguineProduct.name.trim() === item.trim()
+      );
+      in_mvt.forEach((e: any) => {
+        in_mvt_qty += e!.quantity || 0;
+      });
+      out_mvt.forEach((e: any) => {
+        out_mvt_qty += e!.quantity || 0;
+      });
+      adjustment_mvt[item] = in_mvt_qty - out_mvt_qty;
+    });
+  }
+
+  //fonction d'injection des données de laboratoire (pending last week & adjustments) dans le formulaire
+  handleLabDataInjection(
+    information_unit_label: string,
+    information_unit: any,
+    VIRAL_LOAD_LABEL: string,
+    EID_LABEL: string
+  ) {
+    const copie = JSON.parse(JSON.stringify(information_unit)); // Créer une copie de l'array pour éviter de modifier l'original
+
+    if (information_unit_label.trim() === VIRAL_LOAD_LABEL.trim()) {
+      // definition des données de "VL Number Sample Pending (Last Week)"
+      const copiedInformationUnit_subUnits_1 = JSON.parse(JSON.stringify(copie.subUnits));
+      const vl_number_sample_pending_last_week = copiedInformationUnit_subUnits_1[3];
+      vl_number_sample_pending_last_week['name'] = 'VL Number Sample Pending (Last Week)';
+      vl_number_sample_pending_last_week.subSubUnits.forEach((subSubUnit: any) => {
+        subSubUnit['isPendingLastWeek'] = true;
+      });
+
+      // definition des données de "VL Number Sample On Adjustment"
+      const copiedInformationUnit_subUnits_2 = JSON.parse(JSON.stringify(copie.subUnits));
+      const vl_number_sample_on_adjustment = copiedInformationUnit_subUnits_2[0];
+      vl_number_sample_on_adjustment['name'] = 'VL Number Sample On Adjustment';
+      vl_number_sample_on_adjustment.subSubUnits.forEach((subSubUnit: any) => {
+        subSubUnit['isOnAdjustment'] = true;
+      });
+
+      // Insérer "vl_number_sample_on_adjustment" à l'index 4 (dans le tableau initial)
+      information_unit.subUnits.splice(3, 0, vl_number_sample_on_adjustment);
+
+      // Insérer "vl_number_sample_pending_last_week" à l'index 0
+      information_unit.subUnits.splice(0, 0, vl_number_sample_pending_last_week);
+    }
+
+    if (information_unit_label.trim() === EID_LABEL.trim()) {
+      // definition des données de "EID Number Sample Pending (Last Week)"
+      const copiedInformationUnit_subUnits_1 = JSON.parse(JSON.stringify(copie.subUnits));
+      const eid_number_sample_pending_last_week = copiedInformationUnit_subUnits_1[3];
+      eid_number_sample_pending_last_week['name'] = 'EID Number Sample Pending (Last Week)';
+      eid_number_sample_pending_last_week['isPendingLastWeek'] = true;
+
+      // definition des données de "EID Number Sample On Adjustment"
+      const copiedInformationUnit_subUnits_2 = JSON.parse(JSON.stringify(copie.subUnits));
+      const eid_number_sample_on_adjustment = copiedInformationUnit_subUnits_2[0];
+      eid_number_sample_on_adjustment['name'] = 'EID Number Sample On Adjustment';
+      eid_number_sample_on_adjustment['isOnAdjustment'] = true;
+
+      // Insérer "eid_number_sample_on_adjustment" à l'index 4 (dans le tableau initial)
+      information_unit.subUnits.splice(3, 0, eid_number_sample_on_adjustment);
+
+      // Insérer "eid_number_sample_pending_last_week" à l'index 0
+      information_unit.subUnits.splice(0, 0, eid_number_sample_pending_last_week);
+    }
+    return information_unit;
   }
 
   createReportDetails(
@@ -173,10 +317,12 @@ export class ReportService extends SharedService {
         account_id: this.authService.userAccountId,
         equipment_name,
       },
-    }).pipe(map((response: any) => {
-      console.log('lastFinalizedReportByEquipmentAndAccount - report.service.ts:177', response);
-      return response.data.lastFinalizedReportByEquipmentAndAccount;
-    }));
+    }).pipe(
+      map((response: any) => {
+        console.log('lastFinalizedReportByEquipmentAndAccount - report.service.ts:322', response);
+        return response.data.lastFinalizedReportByEquipmentAndAccount;
+      })
+    );
   }
 
   findPeriodByName(name: string) {

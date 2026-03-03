@@ -111,6 +111,12 @@ export class ReportHistory extends FormBaseComponent implements OnInit, OnDestro
   adjustments: Record<string, Record<string, any>[] | any> = {};
   adjustment_types: any;
 
+  transfer_mvt_out: any[] = [];
+  transfer_mvt_in: any[] = [];
+  adjustment_mvt: Record<string, any> = {};
+  transactionByDateRange: any;
+  pending_last_week: any;
+
   Tabs: Tab[] = [
     { label: 'Données de laboratoire', content: 'lab' },
     { label: 'Données logistiques', content: 'pharm' },
@@ -207,22 +213,31 @@ export class ReportHistory extends FormBaseComponent implements OnInit, OnDestro
     for (const obj of items) {
       this.pharmInputs[obj.key] = obj.value;
     }
-    console.log('pharmInputs - report-history.ts:210', this.pharmInputs);
+    console.log('pharmInputs - report-history.ts:216', this.pharmInputs);
   }
 
   get equipmentIntrants() {
     return this.equipmentInfo.intrants as Intrant[];
   }
 
+  VIRAL_LOAD_LABEL = `Viral Load`;
+  EID_LABEL = `Early Infant Diagnosis`;
+
   onInformationUnitChange(information_unit_label: string) {
     this.information_unit_label = information_unit_label;
-    this.information_unit = this.equipmentInfo.information.find(
-      i => i.name === information_unit_label
+    const equipmentInfo = JSON.parse(JSON.stringify(this.equipmentInfo));
+    const copiedEquipmentInfo_information = JSON.parse(JSON.stringify(equipmentInfo.information));
+    this.information_unit = this.service.handleLabDataInjection(
+      information_unit_label,
+      copiedEquipmentInfo_information.find((i: any) => i.name === information_unit_label),
+      this.VIRAL_LOAD_LABEL,
+      this.EID_LABEL
     );
   }
 
   createLabFromReportInformations() {
     const labformControls: any[] = [];
+    const pending_last_week_controls: any[] = [];
     this.report!.labActivityData.forEach((data: any, i: number) => {
       labformControls.push({
         key: `unit_${data.information.id}`,
@@ -231,6 +246,14 @@ export class ReportHistory extends FormBaseComponent implements OnInit, OnDestro
       });
     });
     this.lab_form = this.buildFormFromArray(labformControls);
+    //mapping des données labo précédentes dans le formulaire
+    this.lastFinalizedReport?.labActivityData?.forEach((data: any, i: number) => {
+      pending_last_week_controls.push({
+        key: `unit_${data.information.id}`,
+        value: data.value,
+      });
+    });
+    this.setPending_last_week(pending_last_week_controls);
   }
 
   createPharmFromReportInformations() {
@@ -269,6 +292,22 @@ export class ReportHistory extends FormBaseComponent implements OnInit, OnDestro
     return form.get(key)?.value;
   }
 
+  setPending_last_week(items: any) {
+    if (items && items.length > 0) {
+      for (const obj of items) {
+        this.pending_last_week[obj.key] = obj.value;
+      }
+    } else {
+      this.pending_last_week = null;
+    }
+    console.log('pending_last_week  labreport.ts:281 - report-history.ts:303', this.pending_last_week);
+  }
+
+  handleTransactionCallBack(r: any) {
+    this.transfer_mvt_out = r.transfer_mvt_out;
+    this.transfer_mvt_in = r.transfer_mvt_in;
+  }
+
   ngOnInit(): void {
     this.form!.get('information_unit')?.valueChanges.subscribe(information_unit_label => {
       this.onInformationUnitChange(information_unit_label);
@@ -281,16 +320,39 @@ export class ReportHistory extends FormBaseComponent implements OnInit, OnDestro
     this.router.queryParamMap.subscribe(params => {
       const data = JSON.parse(params.get('data')!);
       if (data) {
+        this.service.findPeriodByName(data.period).subscribe(res => {
+          if (res) {
+            console.log(res);
+            this.service
+              .findTransactionByDateRange({
+                start_date: res.startDate,
+                end_date: res.endDate,
+              })
+              .subscribe(response => {
+                this.transactionByDateRange = response;
+                this.service.handleTransactions(
+                  data.equipment,
+                  this.transactionByDateRange,
+                  this.adjustment_mvt,
+                  {
+                    start_date: res.startDate,
+                    end_date: res.endDate,
+                  },
+                  this.handleTransactionCallBack.bind(this)
+                );
+              });
+          }
+        });
         this.service
           .findLastsFinalizedReportByEquipmentAndAccount(data.equipment)
           .subscribe(res => {
-            console.log('lastsFinalizedReport - report-history.ts:287', res);
+            console.log('lastsFinalizedReport - report-history.ts:349', res);
             this.lastFinalizedReport = res;
           });
         this.service.findReportById(data.id).subscribe(response => {
           const report = response.data.report;
           if (report) {
-            console.log('report - report-history.ts:293', report);
+            console.log('report - report-history.ts:355', report);
             this.adjustments = this.service.compileAdjustments(
               this.service.getAdjustmentsFromExistingReport(report.IntrantMvtData),
               this.adjustment_types
@@ -299,7 +361,7 @@ export class ReportHistory extends FormBaseComponent implements OnInit, OnDestro
             this.service.getEquipmentInfo(report.equipment.name).subscribe(equipRes => {
               const equipmentInfo = equipRes.data.equipmentInformationByName;
               this.equipmentInfo = equipmentInfo;
-              console.log('equipementInfo - report-history.ts:302', this.equipmentInfo);
+              console.log('equipementInfo - report-history.ts:364', this.equipmentInfo);
               this.createLabFromReportInformations();
               this.createPharmFromReportInformations();
             });
@@ -312,11 +374,21 @@ export class ReportHistory extends FormBaseComponent implements OnInit, OnDestro
   openAdjustmentDialog(data: any) {
     const dialogRef = this.validationDialog.open(AdjustmentDialog, { data });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('Retour du dialog : - report-history.ts:315', result);
+      console.log('Retour du dialog : - report-history.ts:377', result);
       if (result) {
         this.adjustments = this.service.compileAdjustments(result, this.adjustment_types);
       }
     });
+  }
+
+  openSanguinProductAdjustmentDialog(target: any) {
+    const data = {
+      target,
+      sanguin_product_transfert_mvt_out: this.transfer_mvt_out,
+      sanguin_product_transfert_mvt_in: this.transfer_mvt_in,
+    };
+    console.log('data for sanguin product adjustment dialog - report-history.ts:390', data);
+    const dialogRef = this.validationDialog.open(SanguinProductAdjustmentDialog, { data });
   }
 
   ngOnDestroy(): void {}
@@ -359,5 +431,56 @@ export class AdjustmentDialog implements OnInit {
 
   getAdjustmentName(index: any): string {
     return this.adjustment_type?.find((item: any) => item.id === index).name;
+  }
+}
+
+@Component({
+  selector: 'sanguin-product-adjustment-dialog',
+  templateUrl: 'sanguin_product_adjustment-dialog.html',
+  imports: [
+    MatDialogModule,
+    MatButtonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    MatInputModule,
+    MatOptionModule,
+    MatSelectModule,
+  ],
+})
+export class SanguinProductAdjustmentDialog implements OnInit {
+  public data: any = inject(MAT_DIALOG_DATA);
+  public dialogRef = inject(MatDialogRef<SanguinProductAdjustmentDialog>);
+  public readonly validationService = inject(ValidationService);
+  public readonly reportService = inject(ReportService);
+
+  equipment: any;
+  mvt_out: any;
+  mvt_in: any;
+
+  ngOnInit(): void {
+    this.getAdjustmentDetails(this.data);
+  }
+
+  getAdjustmentDetails(data: any) {
+    const out_mvt = data?.sanguin_product_transfert_mvt_out
+      ?.map((r: any) => ({
+        ...r,
+        sanguineProductTransactions: (r.sanguineProductTransactions || []).filter(
+          (t: any) => t.sanguineProduct?.name === data?.target
+        ),
+      }))
+      .filter((r: any) => r.sanguineProductTransactions.length > 0);
+
+    const in_mvt = data?.sanguin_product_transfert_mvt_in
+      ?.map((r: any) => ({
+        ...r,
+        sanguineProductTransactions: (r.sanguineProductTransactions || []).filter(
+          (t: any) => t.sanguineProduct?.name === data?.target
+        ),
+      }))
+      .filter((r: any) => r.sanguineProductTransactions.length > 0);
+    this.mvt_out = out_mvt;
+    this.mvt_in = in_mvt;
+    this.equipment = data.sanguin_product_transfert_mvt_out[0]?.equipment!.name || '';
   }
 }

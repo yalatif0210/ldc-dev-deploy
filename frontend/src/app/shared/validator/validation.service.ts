@@ -6,11 +6,10 @@ import ReportModel from '@shared/models/report.model';
 import { ReportService } from '@shared/services/report.service';
 
 export enum ValidationTargets {
-  CHECK1 = 'Received + Pending (last week) >= Tested',
+  CHECK1 = 'Pending (last week) + Received + Adjustment >= Tested',
   CHECK2 = 'Tested >= Failed (Pending retest + Rejected)',
-  CHECK3 = 'Pending = Received + Pending (last week) - Tested + Pending retest',
+  CHECK3 = 'Pending (current week) = Pending (last week) + Received + Adjustment - Tested + Pending retest',
 }
-
 
 @Injectable({ providedIn: 'root' })
 export class ValidationService extends SharedService {
@@ -27,9 +26,12 @@ export class ValidationService extends SharedService {
 
   get_last_report_lab_data(data: any, data_id: any): number {
     if (data && data.labActivityData && data.labActivityData.length > 0) {
+      console.log('data.labActivityData: - validation.service.ts:29', data.labActivityData);
+      console.log('data_id: - validation.service.ts:30', data_id);
       const found = data.labActivityData.find(
-        (item: any) => Number(item.information.id) === data_id
+        (item: any) => item.information.id === `${data_id}`
       );
+      console.log('found: - validation.service.ts:34', found);
       return found ? found.value : 0;
     }
     return 0;
@@ -43,7 +45,7 @@ export class ValidationService extends SharedService {
   ): Record<string, any> {
     const values: Record<string, any> = {};
     control.forEach((ctrl: any) => {
-      const found = form_value.find((f: any) => f.id === `${ctrl}`);
+      const found = form_value.find((f: any) => f.id === `${ctrl}` || f.id === ctrl);
       if (found) {
         values[ctrl] = Number(found.value);
       }
@@ -59,16 +61,31 @@ export class ValidationService extends SharedService {
     );
   }
 
+  findLastFinalizedReportByEquipmentAndAccount(equipment_name: string): Observable<any> {
+    return this.query(ReportModel.lastFinalizedReportByEquipmentAndAccount, {
+      request: {
+        account_id: this.authService.userAccountId,
+        equipment_name,
+      },
+    });
+  }
+
   procedToValidation(
     form_value: any,
     validator_schema: any,
     account_id: number,
-    equipment_id: number
+    equipment_id: number,
+    equipment_name: any
   ) {
-    console.log('validator_schema - validation.service.ts:68', validator_schema);
-    return this.last_report(account_id, equipment_id).pipe(
+    console.log('validator_schema - validation.service.ts:80', validator_schema);
+    console.log('form_value - validation.service.ts:81', form_value);
+    return this.findLastFinalizedReportByEquipmentAndAccount(equipment_name).pipe(
       map(response => {
-        const last_report = response.data.reportByAccountAndEquipment;
+        console.log(
+          'last_report',
+          response.data.lastFinalizedReportByEquipmentAndAccount
+        );
+        const last_report = response.data.lastFinalizedReportByEquipmentAndAccount;
         const validation_data = this.validationData(form_value, validator_schema, last_report);
 
         for (const rule of validation_data.results) {
@@ -77,7 +94,7 @@ export class ValidationService extends SharedService {
           }
         }
 
-        console.log('ok - validation.service.ts:80', validation_data);
+        console.log('ok - validation.service.ts:97', validation_data);
         return validation_data; // 👉 retourné à l'observable
       })
     );
@@ -123,9 +140,9 @@ export class ValidationService extends SharedService {
         subject: rule.subject,
         values: [],
       };
-      console.log('form_value: - validation.service.ts:126', form_value);
+      console.log('form_value: - validation.service.ts:143', form_value);
       const field__list_data = this.lab_value_extraction(form_value, rule.field_list);
-      console.log('field__list_data: - validation.service.ts:128', field__list_data);
+      console.log('field__list_data: - validation.service.ts:145', field__list_data);
       for (const check of rule.checks) {
         result.values.push({
           name: check.name,
@@ -213,11 +230,12 @@ export class ValidationService extends SharedService {
   areAllValid(
     lab_validation_data: any[],
     pharm_validation_data: any[],
-    adjustment_type: any): boolean {
+    adjustment_type: any
+  ): boolean {
     const lab_all_valid = lab_validation_data.every((result: any) =>
       result.values.every((value: any) => value.isValid)
     );
-    console.log('XXX>>> - validation.service.ts:220', pharm_validation_data);
+    console.log('XXX>>> - validation.service.ts:238', pharm_validation_data);
     const pharm_all_valid = pharm_validation_data.every(
       (item: any) =>
         item.initial +

@@ -5,11 +5,11 @@ export const mpimaRules = {
   rules: [
     {
       subject: 'EID',
-      field_list: [1, 4, 2, 3, 18, 19, 20, 21, 22, 317],
+      field_list: [1, 4, 2, 3, 18, 19, 20, 21, 22, 317, 'EID Sample'],
       checks: [
         {
           name: ValidationTargets.CHECK1,
-          description: 'Received + Pending (last week) >= Tested',
+          description: 'Pending (last week) + Received + Adjustment >= Tested',
           content: {
             left: [
               {
@@ -21,6 +21,11 @@ export const mpimaRules = {
                 field: '4',
                 operator: '+',
                 isPassDataNeeded: true,
+              },
+              {
+                field: 'EID Sample',
+                operator: '+',
+                isPassDataNeeded: false,
               },
             ],
             right: [
@@ -62,7 +67,7 @@ export const mpimaRules = {
         {
           name: ValidationTargets.CHECK3,
           description:
-            'Pending = Received + Pending (last week) - Tested + Pending retest',
+            'Pending (current week) = Pending (last week) + Received + Adjustment - Tested + Pending retest',
           content: {
             left: [
               {
@@ -81,6 +86,11 @@ export const mpimaRules = {
                 field: '4',
                 operator: '+',
                 isPassDataNeeded: true,
+              },
+              {
+                field: 'EID Sample',
+                operator: '+',
+                isPassDataNeeded: false,
               },
               {
                 field: '2',

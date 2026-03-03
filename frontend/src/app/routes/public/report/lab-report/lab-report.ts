@@ -116,6 +116,12 @@ export class LabReport extends FormBaseComponent implements OnInit, OnDestroy {
   lastFinalizedReport?: any;
   _pharmFormControls = signal<Record<string, any>[]>([]);
   SPECIFIC_INFORMATION_LABEL = `Suivi Des Interventions de Maintenance (en cas de panne d'équipement)`;
+  VIRAL_LOAD_LABEL = `Viral Load`;
+  EID_LABEL = `Early Infant Diagnosis`;
+
+  transfer_mvt_out: any[] = [];
+  transfer_mvt_in: any[] = [];
+  adjustment_mvt: Record<string, any> = {};
 
   disable = false;
   adjustment_types: any;
@@ -192,7 +198,7 @@ export class LabReport extends FormBaseComponent implements OnInit, OnDestroy {
   }
 
   onPharmitemChange(key: string, value: any) {
-    console.log('£££££ - lab-report.ts:195', this.pharmInputs);
+    console.log('£££££ - lab-report.ts:201', this.pharmInputs);
   }
 
   isPharmDataValid(intrant_id: any): boolean {
@@ -250,14 +256,45 @@ export class LabReport extends FormBaseComponent implements OnInit, OnDestroy {
 
   onInformationUnitChange(information_unit_label: string) {
     this.information_unit_label = information_unit_label;
-    this.information_unit = this.equipmentInfo.information.find(
-      i => i.name === information_unit_label
+    const equipmentInfo = JSON.parse(JSON.stringify(this.equipmentInfo));
+    const copiedEquipmentInfo_information = JSON.parse(JSON.stringify(equipmentInfo.information));
+    this.information_unit = this.service.handleLabDataInjection(
+      information_unit_label,
+      copiedEquipmentInfo_information.find((i: any) => i.name === information_unit_label),
+      this.VIRAL_LOAD_LABEL,
+      this.EID_LABEL
     );
+
+    console.log('information_unit - lab-report.ts:268', this.information_unit);
+  }
+
+  pending_last_week: Record<string, number> | null = {};
+
+  setPending_last_week(items: any) {
+    if (items.length > 0) {
+      for (const obj of items) {
+        this.pending_last_week![obj.key] = obj.value;
+      }
+    } else {
+      this.pending_last_week = null;
+    }
   }
 
   createLabFormFromEquipmentInformations() {
     //create lab form
     const labformControls: any[] = [];
+    const pending_last_week_controls: any[] = [];
+    //mapping des données labo précédentes dans le formulaire
+    console.log('lastFinalizedReport - lab-report.ts:288', this.lastFinalizedReport);
+    this.lastFinalizedReport?.labActivityData?.forEach((data: any, i: number) => {
+      pending_last_week_controls.push({
+        key: `unit_${data.information.id}`,
+        value: data.value,
+      });
+    });
+    console.log('pending_last_week_controls - lab-report.ts:295', pending_last_week_controls);
+    this.setPending_last_week(pending_last_week_controls);
+    console.log('pending_last_week - lab-report.ts:297', this.pending_last_week);
     this.equipmentInfo.information.forEach((unit: any, index: number) => {
       unit.subUnits.forEach((subUnits: any, i: number) => {
         if (subUnits.subSubUnits.length) {
@@ -275,12 +312,21 @@ export class LabReport extends FormBaseComponent implements OnInit, OnDestroy {
         }
       });
     });
-    console.log('labformControls - lab-report.ts:278', labformControls);
+    console.log('labformControls - lab-report.ts:315', labformControls);
     this.setLabInput(labformControls);
   }
 
   createLabFromReportInformations() {
     const labformControls: any[] = [];
+    const pending_last_week_controls: any[] = [];
+    //mapping des données labo précédentes dans le formulaire
+    this.lastFinalizedReport?.labActivityData.forEach((data: any, i: number) => {
+      pending_last_week_controls.push({
+        key: `unit_${data.information.id}`,
+        value: data.value,
+      });
+    });
+    this.setPending_last_week(pending_last_week_controls);
     this.report!.labActivityData.forEach((data: any, i: number) => {
       labformControls.push({
         key: `unit_${data.information.id}`,
@@ -316,7 +362,7 @@ export class LabReport extends FormBaseComponent implements OnInit, OnDestroy {
         value: 0,
       });
     });
-    console.log('pharmFormControls - lab-report.ts:319', pharmFormControls);
+    console.log('pharmFormControls - lab-report.ts:365', pharmFormControls);
     this.setPharmInput(pharmFormControls);
     this.calculateTotalPages();
   }
@@ -325,14 +371,14 @@ export class LabReport extends FormBaseComponent implements OnInit, OnDestroy {
     for (const obj of items) {
       this.pharmInputs[obj.key] = obj.value;
     }
-    console.log('pharmInputs - lab-report.ts:328', this.pharmInputs);
+    console.log('pharmInputs - lab-report.ts:374', this.pharmInputs);
   }
 
   setLabInput(items: any) {
     for (const obj of items) {
       this.labInputs[obj.key] = obj.value;
     }
-    console.log('labInputs - lab-report.ts:335', this.labInputs);
+    console.log('labInputs - lab-report.ts:381', this.labInputs);
   }
 
   createPharmFromReportInformations() {
@@ -383,17 +429,24 @@ export class LabReport extends FormBaseComponent implements OnInit, OnDestroy {
           ? this.report
           : false
       );
+      const adjustment_mvt_dto = this.service.handleNormalizedAdjustmentMvtForValidation(
+        this.adjustment_mvt
+      );
       this.validationService
         .procedToValidation(
           this.report?.IntrantMvtData?.length || this.report?.labActivityData?.length
-            ? this.service.getInformationDTOForValidation(this.labInputs)
-            : informationDTO,
+            ? [
+                ...this.service.getInformationDTOForValidation(this.labInputs),
+                ...adjustment_mvt_dto,
+              ]
+            : [...informationDTO, ...adjustment_mvt_dto],
           validatorRules[this.equipmentName as keyof typeof validatorRules],
           this.auth.userAccountId!,
-          Number(this.equipmentId)
+          Number(this.equipmentId),
+          this.equipmentName
         )
         .subscribe(response => {
-          console.log('Validation réussie - lab-report.ts:396', response);
+          console.log('Validation réussie - lab-report.ts:449', response);
           this.openValidationDialog({
             validation_result: response,
             report: this.report,
@@ -423,34 +476,6 @@ export class LabReport extends FormBaseComponent implements OnInit, OnDestroy {
     }
   }
 
-  transfer_mvt_out: any[] = [];
-  transfer_mvt_in: any[] = [];
-
-  handleTransactions(equipment_name: string) {
-    this.service.getUserInfo().subscribe(res => {
-      const transfer_mvt_out = this.transactionByDateRange.filter(
-        (e: any) => e.origin.id === res.structures[0].id && e.equipment.name === equipment_name
-      );
-      const transfer_mvt_in = this.transactionByDateRange.filter(
-        (e: any) => e.destination.id === res.structures[0].id && e.equipment.name === equipment_name
-      );
-      const transfer_mvt_out_result: any[] = [];
-      const transfer_mvt_in_result: any[] = [];
-
-      transfer_mvt_in.forEach((e: any) =>
-        transfer_mvt_in_result.push(...e.sanguineProductTransactions)
-      );
-
-      transfer_mvt_out.forEach((e: any) =>
-        transfer_mvt_out_result.push(...e.sanguineProductTransactions)
-      );
-
-      this.transfer_mvt_in = this.handleCompileTransaction(transfer_mvt_in_result);
-      this.transfer_mvt_out = this.handleCompileTransaction(transfer_mvt_out_result);
-      console.log('mvt_info - lab-report.ts:450', this.transfer_mvt_out);
-    });
-  }
-
   handleCompileTransaction(data: any) {
     if (!data.length) {
       return [];
@@ -471,6 +496,11 @@ export class LabReport extends FormBaseComponent implements OnInit, OnDestroy {
         return acc;
       }, {})
     );
+  }
+
+  handleTransactionCallBack(r: any) {
+    this.transfer_mvt_out = r.transfer_mvt_out;
+    this.transfer_mvt_in = r.transfer_mvt_in;
   }
 
   ngOnInit(): void {
@@ -501,13 +531,23 @@ export class LabReport extends FormBaseComponent implements OnInit, OnDestroy {
                 end_date: res.endDate,
               })
               .subscribe(response => {
+                console.log('transactionByDateRange - lab-report.ts:534', response);
                 this.transactionByDateRange = response;
-                this.handleTransactions(data.equipment);
+                this.service.handleTransactions(
+                  data.equipment,
+                  this.transactionByDateRange,
+                  this.adjustment_mvt,
+                  {
+                    start_date: res.startDate,
+                    end_date: res.endDate,
+                  },
+                  this.handleTransactionCallBack.bind(this)
+                );
               });
           }
         });
         this.service.findLastFinalizedReportByEquipmentAndAccount(data.equipment).subscribe(res => {
-          console.log('lastFinalizedReport - lab-report.ts:510', res);
+          console.log('lastFinalizedReport - lab-report.ts:550', res);
           this.lastFinalizedReport = res;
         });
         this.service
@@ -516,14 +556,14 @@ export class LabReport extends FormBaseComponent implements OnInit, OnDestroy {
             const report = response.data.reportByAccountAndEquipmentAndPeriodAlso;
             if (report) {
               this.report = report;
-              console.log('report>>> - lab-report.ts:519', report);
+              console.log('report>>> - lab-report.ts:559', report);
               this.adjustments = this.service.compileAdjustments(
                 this.service.getAdjustmentsFromExistingReport(report.IntrantMvtData),
                 this.adjustment_types
               );
               this.service.getEquipmentInfo(data.equipment).subscribe(equipRes => {
                 const equipmentInfo = equipRes.data.equipmentInformationByName;
-                console.log('equipmentInfo - lab-report.ts:526', equipmentInfo);
+                console.log('equipmentInfo - lab-report.ts:566', equipmentInfo);
                 this.equipmentInfo = equipmentInfo;
                 if (!report?.IntrantMvtData.length || !report?.labActivityData.length) {
                   if (!this.isUserPharmUser) {
@@ -575,13 +615,24 @@ export class LabReport extends FormBaseComponent implements OnInit, OnDestroy {
   }
 
   openAdjustmentDialog(data: any) {
-    const dialogRef = this.validationDialog.open(AdjustmentDialog, { data });
+    const dialogRef = this.validationDialog.open(AdjustmentDialog, {
+      data,
+    });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('Retour du dialog : - lab-report.ts:580', result);
+      console.log('Retour du dialog : - lab-report.ts:622', result);
       if (result) {
         this.adjustments = this.service.compileAdjustments(result, this.adjustment_types);
       }
     });
+  }
+
+  openSanguinProductAdjustmentDialog(target: any) {
+    const data = {
+      target,
+      sanguin_product_transfert_mvt_out: this.transfer_mvt_out,
+      sanguin_product_transfert_mvt_in: this.transfer_mvt_in,
+    };
+    const dialogRef = this.validationDialog.open(SanguinProductAdjustmentDialog, { data });
   }
   ngOnDestroy(): void {}
 }
@@ -598,7 +649,7 @@ export class ValidationDialog implements OnInit {
   disable = false;
 
   ngOnInit(): void {
-    console.log('data - lab-report.ts:601', this.data);
+    console.log('data - lab-report.ts:652', this.data);
   }
 
   get allValid(): boolean {
@@ -699,5 +750,56 @@ export class AdjustmentDialog implements OnInit {
       ];
     }
     this.dialogRef.close(datas);
+  }
+}
+
+@Component({
+  selector: 'sanguin-product-adjustment-dialog',
+  templateUrl: 'sanguin_product_adjustment-dialog.html',
+  imports: [
+    MatDialogModule,
+    MatButtonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    MatInputModule,
+    MatOptionModule,
+    MatSelectModule,
+  ],
+})
+export class SanguinProductAdjustmentDialog implements OnInit {
+  public data: any = inject(MAT_DIALOG_DATA);
+  public dialogRef = inject(MatDialogRef<SanguinProductAdjustmentDialog>);
+  public readonly validationService = inject(ValidationService);
+  public readonly reportService = inject(ReportService);
+
+  equipment: any;
+  mvt_out: any;
+  mvt_in: any;
+
+  ngOnInit(): void {
+    this.getAdjustmentDetails(this.data);
+  }
+
+  getAdjustmentDetails(data: any) {
+    const out_mvt = data?.sanguin_product_transfert_mvt_out
+      ?.map((r: any) => ({
+        ...r,
+        sanguineProductTransactions: (r.sanguineProductTransactions || []).filter(
+          (t: any) => t.sanguineProduct?.name === data?.target
+        ),
+      }))
+      .filter((r: any) => r.sanguineProductTransactions.length > 0);
+
+    const in_mvt = data?.sanguin_product_transfert_mvt_in
+      ?.map((r: any) => ({
+        ...r,
+        sanguineProductTransactions: (r.sanguineProductTransactions || []).filter(
+          (t: any) => t.sanguineProduct?.name === data?.target
+        ),
+      }))
+      .filter((r: any) => r.sanguineProductTransactions.length > 0);
+    this.mvt_out = out_mvt;
+    this.mvt_in = in_mvt;
+    this.equipment = data.sanguin_product_transfert_mvt_out[0]?.equipment!.name || '';
   }
 }

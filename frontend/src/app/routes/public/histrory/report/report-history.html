@@ -74,15 +74,69 @@
                   @for(subUnits of information_unit.subUnits; track $index){
                   @if(subUnits.subSubUnits.length){ @for(sub of subUnits.subSubUnits; track $index){
                   <td style="text-align: center">
-                    {{getSpecificFormValue(lab_form!, 'unit_'+sub.id)}}
+                    @if (sub.isOnAdjustment) {
+                    <span class="adjustment">
+                      <div
+                        style="
+                          text-align: center;
+                          width: 50%;
+                          height: 20px;
+                          background-color: white;
+                        "
+                      >
+                        {{adjustment_mvt[sub.name] || 0}}
+                      </div>
+                      <button (click)="openSanguinProductAdjustmentDialog(sub.name)">🔍</button>
+                    </span>
+                    }@if(sub.isPendingLastWeek) {
+                    <span class="adjustment">
+                      <div
+                        style="
+                          text-align: center;
+                          width: 70px;
+                          height: 20px;
+                          background-color: white;
+                        "
+                      >
+                        {{pending_last_week && pending_last_week['unit_'+sub.id] || 0}}
+                      </div>
+                    </span>
+                    }@if(!sub.isOnAdjustment && !sub.isPendingLastWeek) {
+                    {{getSpecificFormValue(lab_form!, 'unit_'+sub.id)}} }
                   </td>
                   } } @if(!subUnits.subSubUnits.length){
                   <td style="text-align: center">
                     @if(information_unit_label === SPECIFIC_INFORMATION_LABEL){
-                    {{resloveDate(getSpecificFormValue(lab_form!, 'unit_'+subUnits.id))}}
-                  } @else{
-                      {{getSpecificFormValue(lab_form!, 'unit_'+subUnits.id)}}
-                    }
+                    {{resloveDate(getSpecificFormValue(lab_form!, 'unit_'+subUnits.id))}} } @else{
+                    @if(subUnits.isOnAdjustment) {
+                    <span class="adjustment">
+                      <div
+                        style="
+                          text-align: center;
+                          width: 50%;
+                          height: 20px;
+                          background-color: white;
+                        "
+                      >
+                        {{adjustment_mvt['EID Sample'] || 0}}
+                      </div>
+                      <button (click)="openSanguinProductAdjustmentDialog('EID Sample')">🔍</button>
+                    </span>
+                    }@if(subUnits.isPendingLastWeek) {
+                    <span class="adjustment">
+                      <div
+                        style="
+                          text-align: center;
+                          width: 50%;
+                          height: 20px;
+                          background-color: white;
+                        "
+                      >
+                        {{pending_last_week && pending_last_week['unit_'+subUnits.id] || 0}}
+                      </div>
+                    </span>
+                    } @if(!subUnits.isOnAdjustment && !subUnits.isPendingLastWeek){
+                    {{getSpecificFormValue(lab_form!, 'unit_'+subUnits.id)}} } }
                   </td>
                   } }
                 </tr>

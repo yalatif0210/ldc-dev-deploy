@@ -45,16 +45,22 @@ export class SidebarNoticeService extends SharedService implements OnDestroy {
         );
         break;
       case 3:
-        return notifications.filter(notif => notif.labelTitle === 'Faire suivre...');
+        return notifications.filter(notif => notif.transactionType === 'NOTIFICATION');
         break;
       case 4:
+        return notifications.filter(notif => notif.transactionType !== 'NOTIFICATION');
+        break;
+      case 5:
+        return notifications.filter(notif => notif.labelTitle === 'Faire suivre...');
+        break;
+      case 6:
         return notifications;
         break;
     }
   }
 
   createTransfer(data: any) {
-    console.log('>>> - sidebar-notice.service.ts:57', data);
+    console.log('>>> - sidebar-notice.service.ts:63', data);
     this.rest.setRestEndpoint('/api/transactions/create');
     this.rest.query(data).subscribe({
       next: response => {},
@@ -63,13 +69,13 @@ export class SidebarNoticeService extends SharedService implements OnDestroy {
   }
 
   updateTransfert(data: any): Observable<any> {
-    console.log('>>> - sidebar-notice.service.ts:66', data);
+    console.log('>>> - sidebar-notice.service.ts:72', data);
     this.rest.setRestEndpoint('/api/transactions/update');
     return this.rest.query(data);
   }
 
   createNotification(data: any) {
-    console.log('>>> - sidebar-notice.service.ts:72', data);
+    console.log('>>> - sidebar-notice.service.ts:78', data);
     this.rest.setRestEndpoint('/api/notifications/create');
     this.rest.query(data).subscribe({
       next: response => {},
@@ -78,7 +84,7 @@ export class SidebarNoticeService extends SharedService implements OnDestroy {
   }
 
   updateNotification(data: any): Observable<any> {
-    console.log('>>> - sidebar-notice.service.ts:81', data);
+    console.log('>>> - sidebar-notice.service.ts:87', data);
     this.rest.setRestEndpoint('/api/notifications/update');
     return this.rest.query(data);
   }
@@ -103,7 +109,8 @@ export class SidebarNoticeService extends SharedService implements OnDestroy {
     notifications: any,
     transfers: any,
     userStructureId: number,
-    isUserAdminOrSupervisor: boolean
+    isUserAdminOrSupervisor: boolean,
+    isPharmUser: boolean
   ): void {
     const current = [...notifications, ...transfers];
     const sorted = [...current].sort((a, b) => {
@@ -111,13 +118,14 @@ export class SidebarNoticeService extends SharedService implements OnDestroy {
       const timeB = new Date((b as any).createdAt).getTime();
       return timeB - timeA;
     });
-    return this.notificationHandler(sorted, userStructureId, isUserAdminOrSupervisor);
+    return this.notificationHandler(sorted, userStructureId, isUserAdminOrSupervisor, isPharmUser);
   }
 
   notificationHandler(
     notifications: any,
     userStructureId: number,
-    isUserAdminOrSupervisor: boolean
+    isUserAdminOrSupervisor: boolean,
+    isPharmUser: boolean
   ): void {
     const notificationsList = [];
     for (const notification of notifications) {
@@ -127,12 +135,18 @@ export class SidebarNoticeService extends SharedService implements OnDestroy {
           color: 'bg-red-90',
           date: new Date(notification.createdAt),
           backgroundColor:
-            notification.isResolved || notification.isRejected ? '#f0f2f5' : '#e7f3ff',
+            notification.isResolved || notification.isRejected ? '#f0f2f5' : '#fdecea',
           title: `Nouvelle Alerte de ${notification.emitter.name}`,
           content: `Bésoin de ${notification.quantity} unités de ${notification.intrant.name} pour l'équipement ${notification.equipment.name}.`,
           transactionType: 'NOTIFICATION',
           labelTitle:
-            (notification.isResolved || notification.isRejected )  ? 'Résolue' : (isUserAdminOrSupervisor || notification.emitter.id === userStructureId) ? 'En attente' : 'Faire suivre...',
+            notification.isResolved || notification.isRejected
+              ? 'Résolue'
+              : isUserAdminOrSupervisor ||
+                  !isPharmUser ||
+                  notification.emitter.id === userStructureId
+                ? 'En attente'
+                : 'Faire suivre...',
           data: notification,
         });
       } else {
@@ -241,7 +255,12 @@ export class SidebarNoticeService extends SharedService implements OnDestroy {
           title: `Nouvelle Alerte de ${data.emitter.name}`,
           content: `Bésoin de ${data.quantity} unités de ${data.intrant.name} pour l'équipement ${data.equipment.name}.`,
           transactionType: 'NOTIFICATION',
-          labelTitle: data.isResolved || data.isRejected ? 'Résolue' : (isUserAdminOrSupervisor || data.emitter.id === userStructureId) ? 'En attente' :'Faire suivre...',
+          labelTitle:
+            data.isResolved || data.isRejected
+              ? 'Résolue'
+              : isUserAdminOrSupervisor || data.emitter.id === userStructureId
+                ? 'En attente'
+                : 'Faire suivre...',
           data,
         };
         const current = [notice, ...this.noticesSubject.getValue()];
