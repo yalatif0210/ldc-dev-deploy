@@ -60,8 +60,8 @@ export class ReportHistoryService extends SharedService {
       request: {
         account_id: this.accountId,
         equipment_id: Number(form_value.equipment),
-        start_date: englishDate(form_value.start_date),
-        end_date: englishDate(form_value.end_date),
+        start_date: (form_value.start_date),
+        end_date: (form_value.end_date),
         status_id: 4,
       },
     });
@@ -72,8 +72,8 @@ export class ReportHistoryService extends SharedService {
       request: {
         supervised_structure_id: Number(form_value.structure),
         equipment_id: Number(form_value.equipment),
-        start_date: englishDate(form_value.start_date),
-        end_date: englishDate(form_value.end_date),
+        start_date: (form_value.start_date),
+        end_date: (form_value.end_date),
         status_id: 4,
       },
     });
@@ -98,29 +98,26 @@ export class ReportHistoryService extends SharedService {
   }
 
   onSubmit(form_value: any, isUserAdminOrSupervisor: boolean) {
-    if (isUserAdminOrSupervisor) {
-      this.getReportsBySupervisedStructureAndEquipmentWithinDateRange(form_value).subscribe(
-        response => {
-          console.log('response>>> - report-history.service.ts:104', response);
-          if (response.data.reportsBySupervisedStructureAndEquipmentWithinDateRange) {
-            this.setList(
-              this.reportsToList(
-                response.data.reportsBySupervisedStructureAndEquipmentWithinDateRange as any[]
-              )
-            );
-          }
+    this.getReportsBySupervisedStructureAndEquipmentWithinDateRange(form_value).subscribe(
+      response => {
+        console.log('response>>> - report-history.service.ts:103', response);
+        if (response.data.reportsBySupervisedStructureAndEquipmentWithinDateRange) {
+          this.setList(
+            this.reportsToList(
+              response.data.reportsBySupervisedStructureAndEquipmentWithinDateRange as any[]
+            )
+          );
         }
-      );
-      return;
-    }
-    this.getReportsByAccountAndEquipmentWithinDateRange(form_value).subscribe(response => {
-      console.log('response>>> - report-history.service.ts:117', response);
-      if (response.data.reportsByAccountAndEquipmentWithinDateRange) {
-        this.setList(
-          this.reportsToList(response.data.reportsByAccountAndEquipmentWithinDateRange as any[])
-        );
       }
-    });
+    );
+    //this.getReportsByAccountAndEquipmentWithinDateRange(form_value).subscribe(response => {
+    //  console.log('response>>> - report-history.service.ts:106', response);
+    //  if (response.data.reportsByAccountAndEquipmentWithinDateRange) {
+    //    this.setList(
+    //      this.reportsToList(response.data.reportsByAccountAndEquipmentWithinDateRange as any[])
+    //    );
+    //  }
+    //});
   }
 
   getColumns(datas: any): any[] {

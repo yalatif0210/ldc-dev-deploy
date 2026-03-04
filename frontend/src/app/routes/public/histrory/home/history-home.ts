@@ -78,14 +78,14 @@ export class HistoryHome extends FormBaseComponent implements OnInit, OnDestroy,
 
   ngOnInit(): void {
     this.home_form?.get('equipment')?.valueChanges.subscribe(value => {
-      console.log('ert', value);
+      console.log('ert - history-home.ts:81', value);
       this.structure_by_equipment = this.structure_list.filter((s: any) =>
         s.equipments.some((e: any) => e.id === value)
       );
-      console.log('coi', this.structure_by_equipment);
+      console.log('coi - history-home.ts:85', this.structure_by_equipment);
     });
     forkJoin([this.service.getEquipments()]).subscribe(([response]) => {
-      console.log('user', response);
+      console.log('user - history-home.ts:88', response);
       this.account = response.data.account;
       this.structure_list = response.data.account.structures;
     });
@@ -100,6 +100,9 @@ export class HistoryHome extends FormBaseComponent implements OnInit, OnDestroy,
   }
 
   onSubmit() {
+    if (!this.isUserAdminOrSupervisor) {
+      this.home_form?.get('structure')?.setValue(this.structure_by_equipment[0]?.id || '');
+    }
     this.service.onSubmit(this.home_form?.value, this.isUserAdminOrSupervisor);
   }
 
