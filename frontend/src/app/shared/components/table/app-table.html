@@ -56,7 +56,7 @@
         }
       </tbody>
     </table>
-    @if (datas!.datas!.length) {
+    @if (datas  && datas.datas && datas.datas.length) {
     <div class="pagination">
       <button (click)="changePage(-1)" [disabled]="page === 1">◀</button>
       @for(item of arrayFromTotalPages; track $index){
