@@ -54,7 +54,7 @@ import { SharedService } from '@shared/services/shared.service';
     AppTable,
   ],
 })
-export class HistoryHome extends FormBaseComponent implements OnInit, OnDestroy, AfterViewInit {
+export class HistoryHome extends FormBaseComponent implements OnInit, OnDestroy {
   service = inject(ReportHistoryService);
   private readonly shared_service = inject(SharedService);
   private readonly authService = inject(AuthService);
@@ -63,8 +63,8 @@ export class HistoryHome extends FormBaseComponent implements OnInit, OnDestroy,
   structure_list: any;
   structure_by_equipment: any;
 
-  @ViewChild('datepicker_start') datepicker_start!: ElementRef;
-  @ViewChild('datepicker_end') datepicker_end!: ElementRef;
+  //@ViewChild('datepicker_start') datepicker_start!: ElementRef;
+  //@ViewChild('datepicker_end') datepicker_end!: ElementRef;
 
   constructor() {
     super();
@@ -106,16 +106,16 @@ export class HistoryHome extends FormBaseComponent implements OnInit, OnDestroy,
     this.service.onSubmit(this.home_form?.value, this.isUserAdminOrSupervisor);
   }
 
-  ngAfterViewInit(): void {
-    flatpickr(this.datepicker_start.nativeElement, {
-      dateFormat: 'd/m/Y', // Format dd/mm/yyyy
-      allowInput: true,
-    });
-    flatpickr(this.datepicker_end.nativeElement, {
-      dateFormat: 'd/m/Y', // Format dd/mm/yyyy
-      allowInput: true,
-    });
-  }
+  //ngAfterViewInit(): void {
+  //  flatpickr(this.datepicker_start.nativeElement, {
+  //    dateFormat: 'd/m/Y', // Format dd/mm/yyyy
+  //    allowInput: true,
+  //  });
+  //  flatpickr(this.datepicker_end.nativeElement, {
+  //    dateFormat: 'd/m/Y', // Format dd/mm/yyyy
+  //    allowInput: true,
+  //  });
+  //}
 
   ngOnDestroy(): void {
     this.service.clearList();
