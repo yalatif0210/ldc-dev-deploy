@@ -48,15 +48,18 @@ public class UserService {
                 for (Structure structure: structureRepository.findAll()){
                     account.addStructure(structure);
                 }
+                break;
             case 3:
                 List<Structure> structures = structureRepository.findByIdList(request.platforms());
                 for(Structure structure: structures){
                     account.addStructure(structure);
                 }
+                break;
             default:
                 for(Structure structure: structureRepository.findByIdList(request.platforms())){
                     account.addStructure(structure);
                 }
+                break;
         }
         account.setRole(roleRepository.findById((long) role).orElse(null));
         account.setIsActive(true);
