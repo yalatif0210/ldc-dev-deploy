@@ -48,7 +48,7 @@ public class UserService {
                     account.addStructure(structure);
                 }
             case 3:
-                for(Structure structure: structureRepository.findByRegionIdList(request.regions())){
+                for(Structure structure: structureRepository.findByIdList(request.platforms())){
                     account.addStructure(structure);
                 }
             default:
