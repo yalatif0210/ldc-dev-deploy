@@ -9,6 +9,7 @@ import com.markov.lab.repository.RoleRepository;
 import com.markov.lab.repository.StructureRepository;
 import com.markov.lab.repository.UserRepository;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,7 +49,8 @@ public class UserService {
                     account.addStructure(structure);
                 }
             case 3:
-                for(Structure structure: structureRepository.findByIdList(request.platforms())){
+                List<Structure> structures = structureRepository.findByIdList(request.platforms());
+                for(Structure structure: structures){
                     account.addStructure(structure);
                 }
             default:
