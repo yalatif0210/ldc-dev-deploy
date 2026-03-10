@@ -1,0 +1,209 @@
+<div class="row f-s-12 justify-content-between wrapper-page-content">
+  <div class="col-sm-12">
+
+    <!-- ── FORMULAIRE ─────────────────────────────────────────── -->
+    <mat-card class="r-0">
+      <mat-card-content class="app-title-bar">
+        <h2 class="th2">Rapports de synthèse</h2>
+      </mat-card-content>
+
+      <mat-card-content>
+        <div class="app-form-wrapper">
+          <form (submit)="onSubmit()" [formGroup]="form!" appearance="outline">
+
+            <!-- Synthèse -->
+            <div class="app-input-label col-sm-12">Type de synthèse <span style="color:red">*</span></div>
+            <div style="margin-bottom:15px" class="col-sm-12">
+              <select class="span3 ng-pristine ng-valid app-select f-s-12" formControlName="synthesis_option">
+                <option value="">Sélectionnez une synthèse</option>
+                @for(opt of options; track opt.id){
+                  <option [value]="opt.id">{{ opt.label }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Équipement & Structure -->
+            <div class="app-input-label col-sm-12">Équipement &amp; Structure <span style="color:red">*</span></div>
+            <div style="margin-bottom:15px" class="col-sm-12">
+              <select class="span3 m-r-8 r-1 app-select f-s-12" formControlName="equipment">
+                <option value="">Sélectionnez un équipement</option>
+                @for(eq of equipmentList; track eq.id){
+                  <option [value]="eq.id">{{ eq.name }}</option>
+                }
+              </select>
+              <select class="span3 m-r-8 r-1 app-select f-s-12" formControlName="structure">
+                <option value="">Sélectionnez une structure</option>
+                <option value="all">— Toutes les structures —</option>
+                @for(s of structureList; track s.id){
+                  <option [value]="s.id">{{ s.name }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Période -->
+            <div class="app-input-label col-sm-12">Intervalle de date <span style="color:red">*</span></div>
+            <div style="margin-bottom:15px" class="col-sm-12">
+              <select class="span3 m-r-8 r-1 app-select f-s-12" formControlName="start_period">
+                <option value="">Période de début</option>
+                @for(p of periods; track p.id){
+                  <option [value]="p.periodName">{{ p.periodName }}</option>
+                }
+              </select>
+              <select class="span3 m-r-8 r-1 app-select f-s-12" formControlName="end_period">
+                <option value="">Période de fin</option>
+                @for(p of periods; track p.id){
+                  <option [value]="p.periodName">{{ p.periodName }}</option>
+                }
+              </select>
+            </div>
+
+            @if(start_Date && end_Date){
+              <div class="col-sm-12 f-s-12" style="margin-bottom:10px">
+                * Période du <strong>{{ start_Date }}</strong> au <strong>{{ end_Date }}</strong>
+              </div>
+            }
+
+            <div class="col-sm-12" style="margin-top:20px">
+              <button
+                type="submit"
+                class="search action-button"
+                [disabled]="!enableSubmit || loading">
+                @if(loading){ Chargement… } @else { Générer }
+              </button>
+            </div>
+          </form>
+        </div>
+      </mat-card-content>
+
+      <!-- ── RÉSULTATS ──────────────────────────────────────────── -->
+      <mat-card-content style="margin-top:24px; min-height:200px">
+
+        @if(!result && !stockResult && !loading){
+          <p class="f-s-12" style="color:#888">Sélectionnez une synthèse et cliquez sur Générer.</p>
+        }
+
+        <!-- ── TABLE CROSS-TAB (req 1, 3, 4, 5, 6, 7, 8) ──────── -->
+        @if(result){
+          <div #tableContainer style="overflow-x:auto; width:100%">
+            <p class="sc-title">{{ result.title }}</p>
+            <p class="sc-subtitle">Période du {{ start_Date }} au {{ end_Date }}</p>
+
+            <table class="sc-table">
+              <thead>
+                <!-- Colonnes : Site | Métrique | Period… | Total -->
+                <tr>
+                  <th class="sc-th-site" rowspan="2">Site</th>
+                  <th class="sc-th-metric" rowspan="2">Indicateur</th>
+                  @for(p of result.periods; track p){
+                    <th class="sc-th-period">{{ p }}</th>
+                  }
+                  <th class="sc-th-total">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Groupes si disponibles -->
+                @for(grp of uniqueGroups(result.rows); track grp){
+                  <!-- En-tête de groupe -->
+                  <tr class="sc-group-header">
+                    <td [colSpan]="result.periods.length + 3">{{ grp }}</td>
+                  </tr>
+                  @for(row of rowsForGroup(result.rows, grp); track row.metricKey){
+                    <tr>
+                      <td class="sc-td-site">{{ row.siteName }}</td>
+                      <td class="sc-td-metric">{{ row.metricLabel }}</td>
+                      @for(p of result.periods; track p){
+                        <td class="sc-td-value" [class.sc-zero]="(row.periodValues[p]??0)===0">
+                          {{ row.periodValues[p] ?? 0 }}
+                        </td>
+                      }
+                      <td class="sc-td-total">{{ row.total }}</td>
+                    </tr>
+                  }
+                  <!-- Sous-total du groupe -->
+                  <tr class="sc-subtotal">
+                    <td colspan="2">Sous-total — {{ grp }}</td>
+                    @for(p of result.periods; track p){
+                      <td class="sc-td-value">{{ sumForPeriod(rowsForGroup(result.rows, grp), p) }}</td>
+                    }
+                    <td class="sc-td-total">{{ grandTotal(rowsForGroup(result.rows, grp)) }}</td>
+                  </tr>
+                }
+
+                <!-- Lignes sans groupe -->
+                @for(row of rowsWithoutGroup(result.rows); track row.metricKey){
+                  <tr>
+                    <td class="sc-td-site">{{ row.siteName }}</td>
+                    <td class="sc-td-metric">{{ row.metricLabel }}</td>
+                    @for(p of result.periods; track p){
+                      <td class="sc-td-value" [class.sc-zero]="(row.periodValues[p]??0)===0">
+                        {{ row.periodValues[p] ?? 0 }}
+                      </td>
+                    }
+                    <td class="sc-td-total">{{ row.total }}</td>
+                  </tr>
+                }
+
+                <!-- Total général -->
+                <tr class="sc-grand-total">
+                  <td colspan="2">TOTAL GÉNÉRAL</td>
+                  @for(p of result.periods; track p){
+                    <td>{{ sumForPeriod(result.rows, p) }}</td>
+                  }
+                  <td>{{ grandTotal(result.rows) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        }
+
+        <!-- ── TABLE STOCK FIN DE PÉRIODE (req 2) ──────────────── -->
+        @if(stockResult){
+          <div #tableContainer style="overflow-x:auto; width:100%">
+            <p class="sc-title">{{ activeOption?.label }}</p>
+            <p class="sc-subtitle">Période du {{ start_Date }} au {{ end_Date }}</p>
+
+            <table class="sc-table">
+              <thead>
+                <tr>
+                  <th class="sc-th-metric">Réactif / Consommable</th>
+                  <th class="sc-th-metric">Unité</th>
+                  @for(s of stockResult.structures; track s.id){
+                    <th class="sc-th-period">{{ s.name }}</th>
+                  }
+                  <th class="sc-th-total">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for(row of stockResult.rows; track row.intrantCode){
+                  <tr>
+                    <td class="sc-td-metric">{{ row.intrantName }}</td>
+                    <td class="sc-td-metric" style="text-align:center">{{ row.intrantSku }}</td>
+                    @for(s of stockResult.structures; track s.id){
+                      <td class="sc-td-value" [class.sc-zero]="(row.siteValues[s.id]??0)===0">
+                        {{ row.siteValues[s.id] ?? 0 }}
+                      </td>
+                    }
+                    <td class="sc-td-total">{{ stockTotal(row, stockResult.structures) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- ── BARRE D'EXPORT ─────────────────────────────────────── -->
+@if(result || stockResult){
+  <div class="sc-export-bar">
+    <button class="action-button" (click)="exportPDF()">
+      <mat-icon>picture_as_pdf</mat-icon> PDF
+    </button>
+    <button class="action-button" (click)="exportExcel()">
+      <mat-icon>table_view</mat-icon> Excel
+    </button>
+  </div>
+}

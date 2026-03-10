@@ -161,6 +161,11 @@
           "name": "synthese-qualite",
           "type": "link",
           "icon": "edit"
+        },
+        {
+          "route": "synthesis-claude",
+          "name": "rapport-synthese-claude",
+          "type": "link"
         }
       ],
       "permissions": {
