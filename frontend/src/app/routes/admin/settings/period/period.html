@@ -1,0 +1,54 @@
+<div class="wrapper-page-content row f-s-12 justify-content-between">
+  <div class="col-sm-12">
+    <mat-card class="r-0">
+      <mat-card-content class="app-title-bar">
+        <h2 class="th2">{{`Période`}}</h2>
+      </mat-card-content>
+      <mat-card-content>
+        <div class="app-form-wrapper">
+          <form (ngSubmit)="service.submit(periodform!)" [formGroup]="periodform!">
+            <div class="app-input-label col-sm-12">
+              Intervalle de date
+              <span style="color: red">*</span>
+            </div>
+            <mat-form-field class="f-s-12 col-sm-4" appearance="outline">
+              <mat-label class="f-s-12">Date de début</mat-label>
+              <input
+                matInput
+                [matDatepicker]="startdate"
+                formControlName="start_date"
+                [min]="minBirthday"
+                required
+              />
+              <mat-datepicker-toggle matSuffix [for]="startdate" />
+              <mat-datepicker #startdate />
+            </mat-form-field>
+
+            <mat-form-field class="f-s-12 col-sm-4" appearance="outline">
+              <mat-label class="f-s-12">Date de fin</mat-label>
+              <input
+                matInput
+                [matDatepicker]="enddate"
+                formControlName="end_date"
+                [min]="minBirthday"
+                required
+              />
+              <mat-datepicker-toggle matSuffix [for]="enddate" />
+              <mat-datepicker #enddate />
+            </mat-form-field>
+
+            <div>
+              <button class="f-s-12" mat-raised-button type="submit">Ajouter</button>
+            </div>
+          </form>
+        </div>
+      </mat-card-content>
+      <mat-card-content style="margin-top: 20px">
+        <p class="th2"></p>
+      </mat-card-content>
+      <mat-card-content style="margin-bottom: 20px; margin-top: 30px">
+        <app-table />
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

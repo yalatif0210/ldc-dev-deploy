@@ -1,0 +1,21 @@
+.matero-sidebar-notice {
+  display: block;
+  height: 100%;
+
+  .mat-mdc-tab-group {
+    height: 100%;
+  }
+
+  .mat-mdc-tab-body-wrapper {
+    flex: 1;
+  }
+
+  .mat-mdc-tab-body-content {
+    padding: 1rem;
+  }
+}
+
+.mat-badge-content {
+  --mat-badge-background-color: #ef0000;
+  --mat-badge-text-color: #fff;
+}

@@ -1,0 +1,177 @@
+{
+  "menu": [
+    {
+      "route": "zver/admin/dashboard",
+      "name": "dashboard",
+      "type": "link",
+      "icon": "dashboard",
+      "permissions": {
+        "only": [
+          "ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    {
+      "route": "zver/admin/settings",
+      "name": "settings",
+      "type": "sub",
+      "icon": "settings",
+      "children": [
+        {
+          "route": "",
+          "name": "users",
+          "type": "sub",
+          "icon": "perm_identity",
+          "children": [
+            {
+              "route": "users",
+              "name": "create_users",
+              "type": "link",
+              "icon": "perm_identity"
+            },
+            {
+              "route": "manage-users",
+              "name": "manage_users",
+              "type": "link",
+              "icon": "perm_identity"
+            }
+          ]
+        },
+        {
+          "route": "",
+          "name": "platforms",
+          "type": "sub",
+          "icon": "business",
+          "children": [
+            {
+              "route": "platforms",
+              "name": "create_platforms",
+              "type": "link",
+              "icon": "perm_identity"
+            },
+            {
+              "route": "platforms",
+              "name": "manage_platforms",
+              "type": "link",
+              "icon": "perm_identity"
+            }
+          ]
+        },
+        {
+          "route": "",
+          "name": "periods",
+          "type": "sub",
+          "icon": "access_time",
+          "children": [
+            {
+              "route": "periods",
+              "name": "create_periods",
+              "type": "link",
+              "icon": "perm_identity"
+            },
+            {
+              "route": "periods",
+              "name": "manage_periods",
+              "type": "link",
+              "icon": "perm_identity"
+            }
+          ]
+        },
+        {
+          "route": "",
+          "name": "factors",
+          "type": "sub",
+          "icon": "description",
+          "children": [
+            {
+              "route": "factors",
+              "name": "manage_factors",
+              "type": "link",
+              "icon": "perm_identity"
+            }
+          ]
+        }
+      ],
+      "permissions": {
+        "only": [
+          "ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    {
+      "route": "zver/public",
+      "name": "weekly",
+      "type": "sub",
+      "icon": "description",
+      "children": [
+        {
+          "route": "report/init",
+          "name": "create-report",
+          "type": "link",
+          "icon": "edit",
+          "permissions": {
+            "only": [
+              "LABORATORY_USER",
+              "PHARMACY_USER"
+            ]
+          }
+        },
+        {
+          "route": "report/history/overview",
+          "name": "view-reports",
+          "type": "link",
+          "icon": "business",
+          "permissions": {
+            "only": [
+              "ADMIN",
+              "SUPER_ADMIN",
+              "SUPERVISOR",
+              "LABORATORY_USER",
+              "PHARMACY_USER"
+            ]
+          }
+        }
+      ],
+      "permissions": {
+        "only": [
+          "SUPER_ADMIN",
+          "ADMIN",
+          "SUPERVISOR",
+          "LABORATORY_USER",
+          "PHARMACY_USER"
+        ]
+      }
+    },
+    {
+      "route": "zver/public",
+      "name": "synthese",
+      "type": "sub",
+      "icon": "all_inbox",
+      "children": [
+        {
+          "route": "synthesis",
+          "name": "rapport-synthese",
+          "type": "link",
+          "icon": "edit"
+        },
+        {
+          "route": "data/quality",
+          "name": "synthese-qualite",
+          "type": "link",
+          "icon": "edit"
+        }
+      ],
+      "permissions": {
+        "only": [
+          "ADMIN",
+          "SUPER_ADMIN",
+          "SUPERVISOR",
+          "LABORATORY_USER",
+          "PHARMACY_USER"
+        ]
+      }
+    }
+  ]
+}

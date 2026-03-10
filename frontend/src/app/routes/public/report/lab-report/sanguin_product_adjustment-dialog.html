@@ -1,0 +1,61 @@
+<h2
+  mat-dialog-title
+  style="
+    background: linear-gradient(to bottom, #0d8d98 0%, #0d6369 100%);
+    color: #fff;
+    padding: 8px;
+    margin: 0;
+  "
+>
+  AJUSTEMENTS
+</h2>
+<mat-dialog-content style="margin-top: 20px">
+  <div
+    style="border-radius: 0; min-width: 500px; max-height: 300px; overflow-x: auto"
+    aria-label="adjustment"
+  >
+    <table class="validation-table" role="table">
+      <thead>
+        <tr>
+          <th colspan="5" style="text-align: center">{{equipment}}</th>
+        </tr>
+        <tr>
+          <th scope="col">Type de transfert</th>
+          <th scope="col">Date de création/réception</th>
+          <th scope="col">Origine/Destination</th>
+          <th scope="col">Type d'échantillon</th>
+          <th scope="col">Quantité</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (!mvt_out.length && !mvt_in.length ) {
+        <tr>
+          <td colspan="5">{{'Aucune donnée à afficher'}}</td>
+        </tr>
+        }@else{ @for (item of mvt_in; track item.id) { @for(elt of item.sanguineProductTransactions;
+        track elt.id) {
+        <tr>
+          <td>IN</td>
+          <td>{{item.feedbackAt }}</td>
+          <td>{{item.origin.name}}</td>
+          <td>{{elt.sanguineProduct.name}}</td>
+          <td>{{elt.quantity}}</td>
+        </tr>
+        } } @for (item of mvt_out; track item.id) { @for(elt of item.sanguineProductTransactions;
+        track elt.id) {
+        <tr>
+          <td>OUT</td>
+          <td>{{item.createdAt }}</td>
+          <td>{{item.destination.name}}</td>
+          <td>{{elt.sanguineProduct.name}}</td>
+          <td>{{elt.quantity}}</td>
+        </tr>
+        } } }
+      </tbody>
+    </table>
+  </div>
+</mat-dialog-content>
+
+<div mat-dialog-actions>
+  <button mat-button color="primary" mat-dialog-close>Close</button>
+</div>

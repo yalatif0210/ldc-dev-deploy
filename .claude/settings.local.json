@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./mvnw compile -q)",
+      "Bash(mvn -f c:/DEV_APP_LAB/DEPLOY/app_v3_claude_optimus/backend/pom.xml compile -q)",
+      "Bash(docker info)"
+    ]
+  }
+}

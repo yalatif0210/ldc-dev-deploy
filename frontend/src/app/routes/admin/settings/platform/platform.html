@@ -1,0 +1,72 @@
+<div class="wrapper-page-content row f-s-12 justify-content-between">
+  <div class="col-sm-12">
+    <mat-card class="r-0">
+      <mat-card-content class="app-title-bar">
+        <h2 class="th2">{{`Plateformes`}}</h2>
+      </mat-card-content>
+      <mat-card-content>
+        <div class="app-form-wrapper">
+          <form
+            (ngSubmit)="service.submit(reactiveform!)"
+            [formGroup]="reactiveform!"
+            appearance="outline"
+          >
+            <div class="app-input-label col-sm-12">
+              Région
+              <span style="color: red">*</span>
+            </div>
+            <div style="margin-bottom: 15px" class="col-sm-12">
+              <select
+                id="rnrType"
+                class="span3 ng-pristine ng-valid app-select f-s-12 justify-content-between"
+                formControlName="region"
+              >
+                <option option value="">{{`Sélectionnez une région`}}</option>
+                @for (region of regions; track $index) {
+                <option [value]="region.id">{{ region.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="app-input-label col-sm-12">
+              Structure & equipement
+              <span style="color: red">*</span>
+            </div>
+            <div style="margin-bottom: 15px" class="col-sm-12">
+              <select
+                id="rnrType"
+                style="max-width: 200px"
+                class="span3 m-r-8 ng-pristine ng-valid app-select f-s-12 justify-content-between"
+                formControlName="structure"
+              >
+                <option option value="">{{`Sélectionnez une structure`}}</option>
+                @for (platform of filteredPlatforms; track $index) {
+                <option [value]="platform.id">{{ platform.name }}</option>
+                }
+              </select>
+              <select
+                id="rnrType"
+                class="span3 ng-pristine ng-valid app-select f-s-12 justify-content-between"
+                formControlName="equipments"
+              >
+                <option option value="">{{`Sélectionnez un équipement`}}</option>
+                @for (equipment of equipments; track $index) {
+                <option [value]="equipment.id">{{ equipment.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="col-sm-12" style="margin-top: 20px">
+              <button type="submit" class="search action-button">Générer</button>
+            </div>
+          </form>
+        </div>
+      </mat-card-content>
+      <mat-card-content style="margin-top: 20px">
+        <p class="th2"></p>
+      </mat-card-content>
+      <mat-card-content style="margin-bottom: 20px; margin-top: 30px">
+        <app-table />
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

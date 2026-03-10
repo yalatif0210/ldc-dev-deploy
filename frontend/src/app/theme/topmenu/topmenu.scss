@@ -1,0 +1,81 @@
+@use '@angular/material' as mat;
+
+.matero-topmenu {
+  --mat-tab-divider-height: 0;
+  --mat-button-text-label-text-color: var(--topmenu-text-color);
+
+  position: sticky;
+  display: block;
+  padding: 0.5rem;
+  line-height: 20px;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(to bottom, #0d8d98 0%, #0d6369 100%);
+  backdrop-filter: blur(8px);
+  height: 40px;
+  font-size: 0.9em;
+  border-bottom: 1px solid #a2cdc5;
+  font-weight: bold;
+  z-index: 200;
+
+  .mat-mdc-button {
+    padding: 5px;
+    white-space: nowrap;
+    margin-top: -8px;
+
+  }
+
+  .menu-icon,
+  .menu-caret,
+  .menu-name {
+    vertical-align: middle;
+  }
+
+  .mat-icon.menu-icon {
+    width: 1.125rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+    font-size: 1rem;
+    line-height: 1.125rem;
+
+    [dir='rtl'] & {
+      margin-right: auto;
+      margin-left: 0.5rem;
+    }
+  }
+
+  .mat-icon.menu-caret {
+    margin-right: -0.5rem;
+
+    [dir='rtl'] & {
+      margin-right: auto;
+      margin-left: -0.5rem;
+    }
+  }
+
+  .menu-label,
+  .menu-badge {
+    padding: 0.2rem 0.2rem;
+    margin-left: 0.5rem;
+    font-size: 0.4rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    background-color: #757575;
+    border-radius: 0.375rem;
+
+    [dir='rtl'] & {
+      margin-right: 0.5rem;
+      margin-left: auto;
+    }
+
+  }
+
+  .menu-badge {
+    border-radius: 50rem;
+  }
+
+  .mat-tab-nav-bar,
+  .mat-tab-header {
+    border-bottom: none;
+  }
+}

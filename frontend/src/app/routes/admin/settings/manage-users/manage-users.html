@@ -1,0 +1,37 @@
+<div class="wrapper-page-content row f-s-12 justify-content-between">
+  <div class="col-sm-12">
+    <mat-card class="r-0">
+      <mat-card-content class="app-title-bar">
+        <h2 class="th2">Configuration des utilisateurs</h2>
+      </mat-card-content>
+      <mat-card-content>
+        <div class="app-form-wrapper">
+          <form [formGroup]="form!" appearance="outline">
+            <div class="app-input-label col-sm-12">
+              Nom d'utilisateur
+              <span style="color: red">*</span>
+            </div>
+            <div class="col-sm-12">
+              <input
+                type="text"
+                style="width: 500px;"
+                placeholder="Saisir le nom de l'utilisateur"
+                class="m-r-8 r-1 f-s-12 justify-content-between"
+                formControlName="name"
+              />
+            </div>
+            <div class="col-sm-12" style="margin-top: 12px">
+              <button (click)="submitForm(form!)" class="search action-button">Rechercher</button>
+            </div>
+          </form>
+        </div>
+      </mat-card-content>
+      <mat-card-content style="margin-top: 20px">
+        <p class="th2"></p>
+      </mat-card-content>
+      <mat-card-content style="margin-bottom: 20px; margin-top: 20px; min-height: 200px">
+        <app-table />
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

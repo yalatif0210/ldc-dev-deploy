@@ -1,0 +1,36 @@
+<h2 mat-dialog-title style="background: linear-gradient(to bottom, #0d8d98 0%, #0d6369 100%); color: #fff; padding: 8px; margin: 0;">
+  RAPPORT DE VALIDATION {{data.validation_result.target}}
+</h2>
+<mat-dialog-content style="margin-top: 20px;">
+  <div
+    style="border-radius: 0px; width: 500px; height: 300px; overflow-x: auto"
+    aria-label="Tableau de validation"
+  >
+    @for( data of data.validation_result.results; track $index){
+    <table class="validation-table" role="table">
+      <thead>
+        <tr>
+          <th colspan="2" style="text-align:center">{{data.subject}}</th>
+        </tr>
+        <tr>
+          <th scope="col">Règles de validation</th>
+          <th scope="col">Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for( value of data.values; track $index){
+        <tr>
+          <td>{{value.description}}</td>
+          <td>{{validationService.getLabel(value.isValid)}}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    }
+  </div>
+</mat-dialog-content>
+
+<div mat-dialog-actions>
+  <button (click)="onConfirm()" [disabled]="disable" mat-button aria-label="Apple">{{data.status_id === 4 ? buttonLabel : 'Enregistrer'}}</button>
+  <button mat-button color="primary" mat-dialog-close>Close</button>
+</div>

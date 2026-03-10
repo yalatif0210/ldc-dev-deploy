@@ -1,0 +1,14 @@
+2026-02-19 00:34:27 [HikariPool-1:housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1h41m21s445ms942µs200ns).
+2026-02-19 05:35:36 [HikariPool-1:housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=4h53m6s457ms504µs599ns).
+2026-02-19 05:54:47 [http-nio-0.0.0.0-8080-exec-1] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Warning Code: 0, SQLState: 01000
+2026-02-19 05:54:47 [http-nio-0.0.0.0-8080-exec-5] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Warning Code: 0, SQLState: 01000
+2026-02-19 05:54:47 [http-nio-0.0.0.0-8080-exec-6] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Warning Code: 0, SQLState: 01000
+2026-02-19 05:54:47 [http-nio-0.0.0.0-8080-exec-7] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Warning Code: 0, SQLState: 01000
+2026-02-19 05:54:47 [http-nio-0.0.0.0-8080-exec-7] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - database "lab" has a collation version mismatch
+2026-02-19 05:54:47 [http-nio-0.0.0.0-8080-exec-6] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - database "lab" has a collation version mismatch
+2026-02-19 05:54:47 [http-nio-0.0.0.0-8080-exec-5] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - database "lab" has a collation version mismatch
+2026-02-19 05:54:47 [http-nio-0.0.0.0-8080-exec-8] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Warning Code: 0, SQLState: 01000
+2026-02-19 05:54:47 [http-nio-0.0.0.0-8080-exec-8] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - database "lab" has a collation version mismatch
+2026-02-19 05:54:47 [http-nio-0.0.0.0-8080-exec-1] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - database "lab" has a collation version mismatch
+2026-02-19 05:54:47 [http-nio-0.0.0.0-8080-exec-3] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Warning Code: 0, SQLState: 01000
+2026-02-19 05:54:47 [http-nio-0.0.0.0-8080-exec-3] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - database "lab" has a collation version mismatch
