@@ -87,9 +87,10 @@ public class SecurityConfig {
                         .requestMatchers("/api-docs/**").permitAll()
                         .requestMatchers("/api-docs").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // GraphQL et WebSocket nécessitent une authentification
+                        // GraphQL nécessite une authentification
                         .requestMatchers("/graphql").authenticated()
-                        .requestMatchers("/ws/**").authenticated()
+                        // WebSocket : SockJS handshake (GET /ws/info) ne peut pas envoyer Bearer
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated())
                 .authenticationManager(authenticationManager)

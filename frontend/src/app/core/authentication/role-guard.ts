@@ -20,3 +20,12 @@ export const publicUserGuard = () => {
   const allowed = [UserRole.LAB_USER, UserRole.PHARM_USER];
   return allowed.includes(role) ? true : router.parseUrl('/403');
 };
+
+export const synthesisGuard = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  if (!auth.check()) return router.parseUrl('/auth/login');
+  const role = auth.userRoleByToken;
+  const allowed = [UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.SUPERVISOR, UserRole.LAB_USER, UserRole.PHARM_USER];
+  return allowed.includes(role) ? true : router.parseUrl('/403');
+};

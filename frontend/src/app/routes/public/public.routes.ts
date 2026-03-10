@@ -6,13 +6,13 @@ import { ReportHistory } from './histrory/report/report-history';
 import { Synthesis } from './synthesis/synthesis';
 import { PublicSettings } from './settings/settings';
 import { publicUserGuard } from '@core/authentication/role-guard';
-import { adminGuard } from '@core/authentication/role-guard';
+import { synthesisGuard } from '@core/authentication/role-guard';
 
 export const routes: Routes = [
   { path: 'report/init', component: PublicHome, canActivate: [publicUserGuard] },
   { path: 'report/history/overview', component: HistoryHome, canActivate: [publicUserGuard] },
   { path: 'report/fill/laboratory', component: LabReport, canActivate: [publicUserGuard] },
   { path: 'report/history', component: ReportHistory, canActivate: [publicUserGuard] },
-  { path: 'synthesis', component: Synthesis, canActivate: [publicUserGuard, adminGuard] },
+  { path: 'synthesis', component: Synthesis, canActivate: [synthesisGuard] },
   { path: 'settings', component: PublicSettings, canActivate: [publicUserGuard] },
 ];

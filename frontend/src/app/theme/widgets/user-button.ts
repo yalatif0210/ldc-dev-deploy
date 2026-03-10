@@ -12,13 +12,17 @@ import { AuthService, SettingsService, User } from '@core';
   selector: 'app-user',
   template: `
     <button mat-icon-button [matMenuTriggerFor]="menu">
-      <img class="avatar" [src]="user.avatar" width="24" alt="avatar" />
+      @if(user?.avatar) {
+        <img class="avatar" [src]="user.avatar" width="24" alt="avatar" />
+      } @else {
+        <mat-icon>account_circle</mat-icon>
+      }
     </button>
 
     <mat-menu #menu="matMenu">
-      <button mat-menu-item (click)="logout()">
-        <mat-icon>account_circle</mat-icon>
-        <span>{{ user_name! | translate }}</span>
+      <button mat-menu-item disabled>
+        <mat-icon>person</mat-icon>
+        <span>{{ user_name }}</span>
       </button>
       @if(!isAdmin){<button routerLink="zver/public//settings" mat-menu-item>
         <mat-icon>settings</mat-icon>
