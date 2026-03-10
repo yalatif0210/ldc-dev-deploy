@@ -166,7 +166,13 @@ export class AuthService {
       return of(this.user$.getValue());
     }
 
-    return this.loginService.user().pipe(tap(user => this.user$.next(user)));
+    return this.loginService.user().pipe(
+      map((user: any) => ({
+        ...user,
+        roles: user.roles?.length ? user.roles : (user.role ? [user.role] : []),
+      })),
+      tap(user => this.user$.next(user))
+    );
   }
 
   private hydrateReceivedToken(token: { access_token: string; refresh_token?: string }) {
