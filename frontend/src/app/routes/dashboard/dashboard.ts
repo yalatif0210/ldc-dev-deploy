@@ -1,152 +1,164 @@
 import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatGridListModule } from '@angular/material/grid-list';
-import { MatListModule } from '@angular/material/list';
-import { MatTableModule } from '@angular/material/table';
-import { MatTabsModule } from '@angular/material/tabs';
-import { RouterLink } from '@angular/router';
-import { SettingsService } from '@core';
-import { MtxAlertModule } from '@ng-matero/extensions/alert';
-import { MtxProgressModule } from '@ng-matero/extensions/progress';
-import { Subscription } from 'rxjs';
-import { CHARTS, ELEMENT_DATA, MESSAGES, STATS } from './data';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatOptionModule } from '@angular/material/core';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { forkJoin } from 'rxjs';
+
+import { AuthService } from '@core/authentication/auth.service';
+import { UserRole } from '@core/bootstrap';
+import { ReportHistoryService } from '@shared/services/report-history.service';
+import { DashboardService, DashboardKpi, StockAlert } from './dashboard.service';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   imports: [
-    RouterLink,
+    CommonModule,
+    FormsModule,
     MatButtonModule,
     MatCardModule,
-    MatChipsModule,
-    MatListModule,
-    MatGridListModule,
-    MatTableModule,
-    MatTabsModule,
-    MtxProgressModule,
-    MtxAlertModule,
+    MatIconModule,
+    MatSelectModule,
+    MatFormFieldModule,
+    MatOptionModule,
+    MatProgressSpinnerModule,
   ],
 })
 export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
-  private readonly ngZone = inject(NgZone);
-  private readonly settings = inject(SettingsService);
+  private readonly ngZone        = inject(NgZone);
+  private readonly authService   = inject(AuthService);
+  private readonly historyService = inject(ReportHistoryService);
+  private readonly dashService   = inject(DashboardService);
 
-  displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
-  dataSource = ELEMENT_DATA;
+  // ── Rôle ──────────────────────────────────────────────────────────────────
+  isAdmin      = false;
+  isSupervisor = false;
 
-  messages = MESSAGES;
+  // ── Données de compte ─────────────────────────────────────────────────────
+  account: any;
+  selectedEquipmentId: number | null = null;
 
-  charts = CHARTS;
-  chart1?: ApexCharts;
-  chart2?: ApexCharts;
+  // ── Chargement ────────────────────────────────────────────────────────────
+  loading = false;
 
-  stats = STATS;
+  // ── Résultats ─────────────────────────────────────────────────────────────
+  kpis: DashboardKpi | null        = null;
+  stockAlerts: StockAlert[]        = [];
+  hasBreakdownData                 = false;
 
-  notifySubscription = Subscription.EMPTY;
+  // ── Charts ApexCharts ────────────────────────────────────────────────────
+  private charts: Record<string, ApexCharts | undefined> = {};
 
+  // ── Options pour le sélecteur d'équipement ────────────────────────────────
+  get equipmentList() { return this.historyService.getEquipmentList(this.account); }
 
-  isShowAlert = true;
+  ngOnInit(): void {
+    this.authService.userRole().subscribe(role => {
+      this.isAdmin      = [UserRole.SUPER_ADMIN, UserRole.ADMIN].includes(role as UserRole);
+      this.isSupervisor = role === UserRole.SUPERVISOR;
+    });
 
-  introducingItems = [
-    {
-      name: 'Acrodata GUI',
-      description: 'A JSON powered GUI for configurable panels.',
-      link: 'https://github.com/acrodata/gui',
-    },
-    {
-      name: 'Code Editor',
-      description: 'The CodeMirror 6 wrapper for Angular.',
-      link: 'https://github.com/acrodata/code-editor',
-    },
-    {
-      name: 'Watermark',
-      description: 'A watermark component that can prevent deletion.',
-      link: 'https://github.com/acrodata/watermark',
-    },
-    {
-      name: 'RnD Dialog',
-      description: 'Resizable and draggable dialog based on CDK dialog.',
-      link: 'https://github.com/acrodata/rnd-dialog',
-    },
-    {
-      name: 'NG DnD',
-      description: 'A toolkit for building complex drag and drop and very similar to react-dnd.',
-      link: 'https://github.com/ng-dnd/ng-dnd',
-    },
-  ];
-
-  introducingItem = this.introducingItems[this.getRandom(0, 4)];
-
-  ngOnInit() {
-    this.notifySubscription = this.settings.notify.subscribe(_opts => {
-      this.updateCharts();
+    forkJoin([this.historyService.getEquipments()]).subscribe(([accountRes]: [any]) => {
+      if (accountRes?.data) {
+        this.account = accountRes.data.account;
+        const eqList = this.equipmentList;
+        if (eqList.length) {
+          this.selectedEquipmentId = eqList[0].id;
+          this.loadDashboardData();
+        }
+      }
     });
   }
 
-  ngAfterViewInit() {
-    this.ngZone.runOutsideAngular(() => this.initCharts());
+  ngAfterViewInit(): void { /* charts rendered after data load */ }
+
+  onEquipmentChange(): void {
+    this.loadDashboardData();
   }
 
-  ngOnDestroy() {
-    this.chart1?.destroy();
-    this.chart2?.destroy();
+  loadDashboardData(): void {
+    if (!this.selectedEquipmentId || !this.account) return;
 
-    this.notifySubscription.unsubscribe();
-  }
+    this.loading = true;
+    this.destroyAllCharts();
 
-  initCharts() {
-    this.chart1 = new ApexCharts(document.querySelector('#chart1'), this.charts[0]);
-    this.chart1?.render();
-    this.chart2 = new ApexCharts(document.querySelector('#chart2'), this.charts[1]);
-    this.chart2?.render();
+    const structureIds = this.historyService.getAdminSuperivisedStructuresIds(
+      this.account.structures ?? []
+    );
 
-    this.updateCharts();
-  }
-
-  updateCharts() {
-    const isDark = this.settings.getThemeColor() == 'dark';
-
-    this.chart1?.updateOptions({
-      chart: {
-        foreColor: isDark ? '#ccc' : '#333',
+    this.dashService.loadReports(structureIds, Number(this.selectedEquipmentId)).subscribe({
+      next: (reports: any[]) => {
+        this.kpis        = this.dashService.computeKpis(reports);
+        this.stockAlerts = this.dashService.computeStockAlerts(reports);
+        this.loading     = false;
+        this.scheduleCharts(reports);
       },
-      tooltip: {
-        theme: isDark ? 'dark' : 'light',
-      },
-      grid: {
-        borderColor: isDark ? '#5a5a5a' : '#e1e1e1',
-      },
-    });
-
-    this.chart2?.updateOptions({
-      chart: {
-        foreColor: isDark ? '#ccc' : '#333',
-      },
-      plotOptions: {
-        radar: {
-          polygons: {
-            strokeColors: isDark ? '#5a5a5a' : '#e1e1e1',
-            connectorColors: isDark ? '#5a5a5a' : '#e1e1e1',
-            fill: {
-              colors: isDark ? ['#2c2c2c', '#222'] : ['#f2f2f2', '#fff'],
-            },
-          },
-        },
-      },
-      tooltip: {
-        theme: isDark ? 'dark' : 'light',
-      },
+      error: () => { this.loading = false; },
     });
   }
 
-  onAlertDismiss() {
-    this.isShowAlert = false;
+  private scheduleCharts(reports: any[]): void {
+    this.ngZone.runOutsideAngular(() => {
+      setTimeout(() => this.renderCharts(reports), 0);
+    });
   }
 
-  getRandom(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+  private renderCharts(reports: any[]): void {
+    const actOpts  = this.dashService.buildActivityChart(reports, this.isAdmin);
+    const trendOpts = this.dashService.buildTrendChart(reports, this.isAdmin);
+    const tatOpts  = this.dashService.buildTatChart(reports);
+    const brkOpts  = this.dashService.buildBreakdownChart(reports);
+    this.hasBreakdownData = brkOpts !== null;
+
+    this.renderChart('chartActivity',  actOpts);
+    this.renderChart('chartTrend',     trendOpts);
+    this.renderChart('chartTat',       tatOpts);
+    if (brkOpts) this.renderChart('chartBreakdown', brkOpts);
+    if (!this.isAdmin && this.kpis) {
+      const realOpts = this.dashService.buildRealizationChart(this.kpis.realizationRate);
+      this.renderChart('chartRealization', realOpts);
+    }
+  }
+
+  private renderChart(id: string, opts: any): void {
+    const el = document.querySelector(`#${id}`);
+    if (!el) return;
+    this.charts[id]?.destroy();
+    const chart = new ApexCharts(el, opts);
+    chart.render();
+    this.charts[id] = chart;
+  }
+
+  private destroyAllCharts(): void {
+    Object.values(this.charts).forEach(c => c?.destroy());
+    this.charts = {};
+  }
+
+  ngOnDestroy(): void {
+    this.destroyAllCharts();
+  }
+
+  // ── Helpers template ──────────────────────────────────────────────────────
+  alertIcon(level: string): string {
+    return level === 'critical' ? 'dangerous' : level === 'low' ? 'warning' : 'info';
+  }
+
+  alertLabel(level: string): string {
+    return level === 'critical' ? 'CRITIQUE' : level === 'low' ? 'BAS' : 'ATTENTION';
+  }
+
+  tatColor(tat: number): string {
+    return tat === 0 ? '#888' : tat <= 14 ? '#28a745' : tat <= 21 ? '#f48c06' : '#e85d04';
+  }
+
+  rateColor(rate: number): string {
+    return rate >= 90 ? '#28a745' : rate >= 70 ? '#f48c06' : '#e85d04';
   }
 }

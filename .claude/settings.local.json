@@ -6,7 +6,8 @@
       "Bash(docker info)",
       "Bash(python3 -c \"import json; d=json.load\\(open\\(''c:/DEV_APP_LAB/DEPLOY/app_v3_claude_optimus/frontend/public/i18n/en-US.json''\\)\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
       "Bash(python3 -c \"import json; d=json.load\\(open\\(''c:/DEV_APP_LAB/DEPLOY/app_v3_claude_optimus/frontend/public/i18n/en-US.json''\\)\\); print\\(json.dumps\\(d[''menu''], indent=2\\)\\)\")",
-      "Bash(npx tsc --noEmit --project tsconfig.app.json)"
+      "Bash(npx tsc --noEmit --project tsconfig.app.json)",
+      "Bash(find /c/DEV_APP_LAB/DEPLOY/app_v3_claude_optimus/frontend/src -name form-base* -o -name *form-base*)"
     ]
   }
 }

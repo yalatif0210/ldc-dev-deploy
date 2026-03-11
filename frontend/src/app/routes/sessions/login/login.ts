@@ -13,8 +13,6 @@ import { filter } from 'rxjs/operators';
 
 import { AuthService } from '@core/authentication';
 
-const ADMIN_ROUTE_INIT = 'zver/admin/dashboard';
-const PUBLIC_ROUTE_INIT = 'zver/public/report/init';
 
 @Component({
   selector: 'app-login',
@@ -36,8 +34,6 @@ export class Login {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
-  private redirection: any;
-
   isSubmitting = false;
 
   loginForm = this.fb.nonNullable.group({
@@ -66,14 +62,7 @@ export class Login {
       .pipe(filter(authenticated => authenticated))
       .subscribe({
         next: () => {
-          const userRoleByToken = this.auth.userRoleByToken;
-          if (userRoleByToken !== undefined && userRoleByToken !== null) {
-            const isAdmin = this.auth.isUserAdminOrSupervisor(userRoleByToken);
-            this.redirection = isAdmin ? ADMIN_ROUTE_INIT : PUBLIC_ROUTE_INIT;
-            if (this.redirection) {
-              this.router.navigateByUrl(this.redirection);
-            }
-          }
+          this.router.navigateByUrl('dashboard');
         },
         error: (errorRes: HttpErrorResponse) => {
           if (errorRes.status === 422) {
