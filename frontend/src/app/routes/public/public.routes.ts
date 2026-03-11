@@ -11,9 +11,9 @@ import { synthesisGuard } from '@core/authentication/role-guard';
 
 export const routes: Routes = [
   { path: 'report/init', component: PublicHome, canActivate: [publicUserGuard] },
-  { path: 'report/history/overview', component: HistoryHome, canActivate: [publicUserGuard] },
+  { path: 'report/history/overview', component: HistoryHome, canActivate: [synthesisGuard] },
   { path: 'report/fill/laboratory', component: LabReport, canActivate: [publicUserGuard] },
-  { path: 'report/history', component: ReportHistory, canActivate: [publicUserGuard] },
+  { path: 'report/history', component: ReportHistory, canActivate: [synthesisGuard] },
   { path: 'synthesis', component: Synthesis, canActivate: [synthesisGuard] },
   { path: 'synthesis-claude', component: SynthesisClaude, canActivate: [synthesisGuard] },
   { path: 'settings', component: PublicSettings, canActivate: [publicUserGuard] },
