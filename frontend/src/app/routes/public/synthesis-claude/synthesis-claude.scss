@@ -1,9 +1,65 @@
+// ── Formulaire ────────────────────────────────────────────────────────────────
+.sc-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  padding: 8px 0;
+
+  mat-form-field { min-width: 180px; }
+}
+
+// ── Chargement ────────────────────────────────────────────────────────────────
+.sc-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  color: #555;
+  font-size: 14px;
+}
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+// ── Carte résultat ────────────────────────────────────────────────────────────
+.sc-result-card { margin-top: 16px; }
+
+.sc-result-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.sc-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e4e8c;
+}
+
+.sc-subtitle {
+  font-size: 12px;
+  color: #666;
+  flex: 1;
+}
+
+// ── Conteneur table (scrollable + sticky headers) ─────────────────────────────
+.sc-table-container {
+  overflow: auto;
+  max-height: calc(100vh - 340px);
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  position: relative;
+}
+
 // ── Table principale ──────────────────────────────────────────────────────────
 .sc-table {
   width: 100%;
   border-collapse: collapse;
   font-family: Arial, sans-serif;
   font-size: 12px;
+  table-layout: auto;
 }
 
 .sc-table th,
@@ -13,12 +69,19 @@
   white-space: nowrap;
 }
 
-// En-têtes
+// ── Sticky headers (tous les th dans thead) ───────────────────────────────────
+.sc-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+// ── En-têtes colonne ──────────────────────────────────────────────────────────
 .sc-th-site {
   background: #2f75b5;
   color: #fff;
   font-weight: 700;
-  min-width: 140px;
+  min-width: 130px;
   text-align: left;
 }
 
@@ -26,7 +89,15 @@
   background: #2f75b5;
   color: #fff;
   font-weight: 700;
-  min-width: 220px;
+  min-width: 200px;
+  text-align: left;
+}
+
+.sc-th-sku {
+  background: #2f75b5;
+  color: #fff;
+  font-weight: 700;
+  min-width: 100px;
   text-align: left;
 }
 
@@ -46,16 +117,17 @@
   min-width: 70px;
 }
 
-// Cellules de données
-.sc-td-site   { text-align: left;   font-weight: 600; }
+// ── Cellules données ──────────────────────────────────────────────────────────
+.sc-td-site   { text-align: left; font-weight: 600; }
 .sc-td-metric { text-align: left; }
-.sc-td-value  { text-align: center; }
-.sc-td-total  { text-align: center; font-weight: 700; background: #e2efda; }
+.sc-td-sku    { text-align: left; color: #444; font-style: italic; }
+.sc-td-value  { text-align: right; }
+.sc-td-total  { text-align: right; font-weight: 700; background: #e2efda; }
 
-// Zéro en gris
+// ── Zéro en gris ──────────────────────────────────────────────────────────────
 .sc-zero { color: #c0c0c0; }
 
-// En-tête de groupe
+// ── En-tête de groupe ─────────────────────────────────────────────────────────
 .sc-group-header td {
   background: #d9e1f2;
   font-weight: 700;
@@ -63,62 +135,92 @@
   padding: 4px 10px;
 }
 
-// Sous-total
+// ── En-tête de sous-groupe (Reçus / Testés) ───────────────────────────────────
+.sc-subgroup-header td {
+  background: #e8edf7;
+  font-weight: 600;
+  text-align: left;
+  padding: 3px 20px;
+  font-style: italic;
+  color: #2f4f8f;
+}
+
+// ── Sous-total ────────────────────────────────────────────────────────────────
 .sc-subtotal td {
   background: #bdd7ee;
   font-weight: 700;
-  text-align: center;
+  text-align: right;
 }
-
 .sc-subtotal td:first-child,
-.sc-subtotal td:nth-child(2) {
-  text-align: left;
+.sc-subtotal td:nth-child(2) { text-align: left; }
+
+// Sous-total de groupe (légèrement différencié)
+.sc-subtotal-group td {
+  background: #9dc3e6;
 }
 
-// Total général
+// ── Total général ─────────────────────────────────────────────────────────────
 .sc-grand-total td {
   background: #2f75b5;
   color: #fff;
   font-weight: 700;
-  text-align: center;
+  text-align: right;
 }
-
 .sc-grand-total td:first-child,
-.sc-grand-total td:nth-child(2) {
-  text-align: left;
-}
+.sc-grand-total td:nth-child(2) { text-align: left; }
 
-// Titres
-.sc-title {
-  font-size: 15px;
-  font-weight: 700;
-  margin-bottom: 4px;
-  color: #1e4e8c;
-}
-
-.sc-subtitle {
-  font-size: 12px;
-  color: #555;
-  margin-bottom: 12px;
-}
-
-// Barre d'export
-.sc-export-bar {
-  position: fixed;
+// ── Sticky colonnes gauche (REQ 2 — STOCK_END) ───────────────────────────────
+.sc-sticky-l1 {
+  position: sticky;
   left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 48px;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0 16px;
-  background: rgba(0, 0, 0, 0.75);
+  z-index: 1;
+  background: white;
+}
 
-  .action-button {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
+.sc-sticky-l2 {
+  position: sticky;
+  left: 200px;   // doit correspondre à min-width de sc-th-metric / sc-sticky-l1
+  z-index: 1;
+  background: white;
+}
+
+// Coin supérieur gauche : sticky top + sticky left → z-index élevé
+.sc-table thead th.sc-sticky-l1,
+.sc-table thead th.sc-sticky-l2 {
+  z-index: 3;
+}
+
+// Héritage de couleur pour les lignes spéciales
+.sc-group-header .sc-sticky-l1,
+.sc-group-header .sc-sticky-l2 { background: #d9e1f2; }
+
+.sc-subtotal .sc-sticky-l1,
+.sc-subtotal .sc-sticky-l2 { background: #bdd7ee; }
+
+.sc-subtotal-group .sc-sticky-l1,
+.sc-subtotal-group .sc-sticky-l2 { background: #9dc3e6; }
+
+.sc-grand-total .sc-sticky-l1,
+.sc-grand-total .sc-sticky-l2 { background: #2f75b5; }
+
+// ── Transferts ────────────────────────────────────────────────────────────────
+.sc-rejected td { background: #fff0f0; }
+
+.sc-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.sc-badge-approved  { background: #c6efce; color: #276221; }
+.sc-badge-rejected  { background: #ffc7ce; color: #9c0006; }
+.sc-badge-pending   { background: #ffeb9c; color: #9c6500; }
+
+// ── Vide ──────────────────────────────────────────────────────────────────────
+.sc-empty {
+  padding: 24px;
+  text-align: center;
+  color: #888;
+  font-style: italic;
 }

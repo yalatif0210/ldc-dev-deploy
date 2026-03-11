@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { SharedService } from './shared.service';
 import SynthesisClaudeModel from '@shared/models/synthesis-claude.model';
+import TransactionModel from '@shared/models/transaction.model';
 import { englishFromFrenchDate } from '@shared/utils/french-date';
 
 // ── InformationSubUnit IDs ────────────────────────────────────────────────────
@@ -45,6 +46,8 @@ export interface ClaudeRow {
   metricKey: string;
   metricLabel: string;
   group?: string;
+  subGroup?: string;    // REQ 3: 'Reçus' | 'Testés' | 'Testés (POC)'
+  metricSku?: string;   // REQ 5: SKU column for stock weekly
   periodValues: Record<string, number>;
   total: number;
 }
@@ -52,7 +55,7 @@ export interface ClaudeRow {
 export interface ClaudeResult {
   type: string;
   title: string;
-  periods: string[];          // ordered period names (columns)
+  periods: string[];
   rows: ClaudeRow[];
 }
 
@@ -60,7 +63,7 @@ export interface StockRow {
   intrantCode: number;
   intrantName: string;
   intrantSku: string;
-  siteValues: Record<string, number>;   // siteId → availableStock
+  siteValues: Record<string, number>;   // already rounded with roundFactor
 }
 
 export interface StockResult {
@@ -68,10 +71,15 @@ export interface StockResult {
   rows: StockRow[];
 }
 
-export interface StockWeeklyRow {
-  intrantCode: number;
-  intrantName: string;
-  periodValues: Record<string, Record<string, number>>; // periodName → siteId → stock
+export interface TransferRow {
+  id: string;
+  date: string;
+  origin: string;
+  destination: string;
+  productName: string;
+  quantity: number;
+  approved: boolean;
+  isRejected: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -79,6 +87,7 @@ export class SynthesisClaudeService extends SharedService {
 
   constructor() { super(); }
 
+  // ── FETCH ──────────────────────────────────────────────────────────────────
   fetchReports(request: {
     structure_ids: number[];
     equipment: number;
@@ -96,43 +105,45 @@ export class SynthesisClaudeService extends SharedService {
     });
   }
 
+  fetchTransactions(startDate: string, endDate: string): Observable<TransferRow[]> {
+    return this.query(TransactionModel.TRANSACTION_BY_DATE_RANGE, {
+      request: { start_date: startDate, end_date: endDate },
+    }).pipe(map((res: any) => res?.data?.transactionByDateRange ?? []));
+  }
+
   // ── SHARED HELPERS ─────────────────────────────────────────────────────────
 
-  /** Extract the primary structure from a report (lab users have 1 structure) */
   private siteOf(report: any): { id: string; name: string } {
     return report.account?.structures?.[0] ?? { id: '?', name: 'Inconnu' };
   }
 
-  /** Return all unique periods in chronological order */
   private extractPeriods(reports: any[]): string[] {
-    const seen = new Map<string, string>(); // periodName → startDate
+    const seen = new Map<string, string>();
     reports.forEach(r => seen.set(r.period.periodName, r.period.startDate));
     return [...seen.entries()]
       .sort(([, a], [, b]) => a.localeCompare(b))
       .map(([name]) => name);
   }
 
-  /** Build an empty period map { periodName: 0 } */
   private zeroPeriods(periods: string[]): Record<string, number> {
     return Object.fromEntries(periods.map(p => [p, 0]));
   }
 
-  /**
-   * Generic cross-tab builder.
-   * For each report, for each labActivityData entry matching subUnitIds,
-   * aggregate by site × period.
-   * metricLabelFn maps the lab datum to a human-readable label.
-   */
+  private roundStock(stock: number, roundFactor: number): number {
+    const rf = Math.max(1, roundFactor ?? 1);
+    return Math.ceil(stock / rf);
+  }
+
   private buildLabCrossTab(
     reports: any[],
     subUnitIds: string[],
-    metricLabelFn: (info: any) => { key: string; label: string; group?: string } | null
-  ): ClaudeResult['rows'] & any {
+    metricLabelFn: (info: any) => { key: string; label: string; group?: string; subGroup?: string } | null
+  ): { periods: string[]; rows: ClaudeRow[] } {
     const periods = this.extractPeriods(reports);
     const map = new Map<string, ClaudeRow>();
 
     reports.forEach(report => {
-      const site = this.siteOf(report);
+      const site   = this.siteOf(report);
       const period = report.period.periodName;
 
       report.labActivityData?.forEach((lad: any) => {
@@ -150,6 +161,7 @@ export class SynthesisClaudeService extends SharedService {
             metricKey:   mapped.key,
             metricLabel: mapped.label,
             group:       mapped.group,
+            subGroup:    mapped.subGroup,
             periodValues: this.zeroPeriods(periods),
             total:       0,
           });
@@ -159,7 +171,6 @@ export class SynthesisClaudeService extends SharedService {
       });
     });
 
-    // compute totals
     map.forEach(row => {
       row.total = Object.values(row.periodValues).reduce((s, v) => s + v, 0);
     });
@@ -171,18 +182,14 @@ export class SynthesisClaudeService extends SharedService {
   computePendingSamples(reports: any[]): ClaudeResult {
     const PENDING_UNITS = [SU.VL_PENDING, SU.EID_PENDING];
     const { periods, rows } = this.buildLabCrossTab(reports, PENDING_UNITS, info => {
-      const su = info?.informationSubUnit?.id;
+      const su  = info?.informationSubUnit?.id;
       const ssu = info?.informationSubSubUnit;
       if (su === SU.VL_PENDING) {
-        if (!ssu) return { key: 'vl_pending', label: 'VL - En attente (total)' };
-        return {
-          key:   `vl_pending_${ssu.id}`,
-          label: `VL Pending — ${ssu.name}`,
-          group: 'Viral Load',
-        };
+        if (!ssu) return { key: 'vl_pending_total', label: 'VL — En attente (total)', group: 'Charge Virale' };
+        return { key: `vl_pending_${ssu.id}`, label: `VL — En attente ${ssu.name}`, group: 'Charge Virale' };
       }
       if (su === SU.EID_PENDING) {
-        return { key: 'eid_pending', label: 'EID - En attente', group: 'EID' };
+        return { key: 'eid_pending', label: 'EID — En attente', group: 'EID' };
       }
       return null;
     });
@@ -196,33 +203,40 @@ export class SynthesisClaudeService extends SharedService {
       SU.EID_RECEIVED, SU.EID_TESTED, SU.EID_TESTED_POC,
     ];
     const ACTION_LABEL: Record<string, string> = {
-      [SU.VL_RECEIVED]:  'Reçus',
-      [SU.VL_TESTED]:    'Testés',
-      [SU.EID_RECEIVED]: 'Reçus',
-      [SU.EID_TESTED]:   'Testés',
+      [SU.VL_RECEIVED]:    'Reçus',
+      [SU.VL_TESTED]:      'Testés',
+      [SU.EID_RECEIVED]:   'Reçus',
+      [SU.EID_TESTED]:     'Testés',
       [SU.EID_TESTED_POC]: 'Testés (POC)',
     };
     const { periods, rows } = this.buildLabCrossTab(reports, UNITS, info => {
-      const su  = info?.informationSubUnit?.id;
-      const ssu = info?.informationSubSubUnit;
+      const su     = info?.informationSubUnit?.id;
+      const ssu    = info?.informationSubSubUnit;
       const action = ACTION_LABEL[su] ?? '';
 
       if ([SU.VL_RECEIVED, SU.VL_TESTED].includes(su)) {
         const typeName = ssu ? ssu.name : 'VL';
+        const group    = `VL ${typeName}`;
         return {
-          key:   `${su}_${ssu?.id ?? 'vl'}`,
-          label: `VL ${typeName} — ${action}`,
-          group: `VL ${typeName}`,
+          key:      `${su}_${ssu?.id ?? 'vl'}`,
+          label:    `${group} — ${action}`,
+          group,
+          subGroup: action,
         };
       }
       if ([SU.EID_RECEIVED, SU.EID_TESTED, SU.EID_TESTED_POC].includes(su)) {
-        return { key: `eid_${su}`, label: `EID — ${action}`, group: 'EID' };
+        return {
+          key:      `eid_${su}`,
+          label:    `EID — ${action}`,
+          group:    'EID',
+          subGroup: action,
+        };
       }
       return null;
     });
     return {
-      type: 'RECEIVED_TESTED',
-      title: 'Échantillons reçus et testés (Plasma / PSC / EID) — par site et semaine',
+      type:    'RECEIVED_TESTED',
+      title:   'Échantillons reçus et testés (Plasma / PSC / EID) — par site et semaine',
       periods,
       rows,
     };
@@ -248,13 +262,11 @@ export class SynthesisClaudeService extends SharedService {
       const ssu = info?.informationSubSubUnit;
       if (!LABEL[su]) return null;
       const base = LABEL[su];
-      if (ssu) {
-        return { key: `${su}_${ssu.id}`, label: `${base} — ${ssu.name}`, group: base };
-      }
+      if (ssu) return { key: `${su}_${ssu.id}`, label: `${base} — ${ssu.name}`, group: base };
       return { key: su, label: base };
     });
     return {
-      type: 'FAILED',
+      type:  'FAILED',
       title: 'Échantillons échoués et en attente de retesting — par site et semaine',
       periods,
       rows,
@@ -263,10 +275,9 @@ export class SynthesisClaudeService extends SharedService {
 
   // ── REQ 5 — Stock disponible par site et par semaine ──────────────────────
   computeStockWeekly(reports: any[]): ClaudeResult {
-    const periods  = this.extractPeriods(reports);
-    const siteSet  = new Map<string, string>();   // siteId → siteName
+    const periods    = this.extractPeriods(reports);
+    const siteSet    = new Map<string, string>();
     const intrantMap = new Map<number, any>();
-    // [siteId][intrantCode][period] = availableStock
     const stockMap: Record<string, Record<number, Record<string, number>>> = {};
 
     reports.forEach(report => {
@@ -280,24 +291,23 @@ export class SynthesisClaudeService extends SharedService {
         if (!code) return;
         if (!intrantMap.has(code)) intrantMap.set(code, mvt.intrant);
         if (!stockMap[site.id][code]) stockMap[site.id][code] = {};
+        const rf = Math.max(1, mvt.intrant?.roundFactor ?? 1);
         stockMap[site.id][code][period] =
-          (stockMap[site.id][code][period] ?? 0) + (mvt.availableStock ?? 0);
+          (stockMap[site.id][code][period] ?? 0) + this.roundStock(mvt.availableStock ?? 0, rf);
       });
     });
 
-    // Build flat rows: one row per (site × intrant)
     const rows: ClaudeRow[] = [];
     siteSet.forEach((siteName, siteId) => {
       intrantMap.forEach((intrant, code) => {
         const periodValues = this.zeroPeriods(periods);
-        if (stockMap[siteId]?.[code]) {
-          Object.assign(periodValues, stockMap[siteId][code]);
-        }
+        if (stockMap[siteId]?.[code]) Object.assign(periodValues, stockMap[siteId][code]);
         const total = Object.values(periodValues).reduce((s, v) => s + v, 0);
         rows.push({
           siteId, siteName,
           metricKey:   `stock_${siteId}_${code}`,
-          metricLabel: `${intrant.name} (${intrant.sku ?? ''})`,
+          metricLabel: intrant.name,
+          metricSku:   intrant.sku ?? '',
           group:       siteName,
           periodValues,
           total,
@@ -305,20 +315,13 @@ export class SynthesisClaudeService extends SharedService {
       });
     });
 
-    return {
-      type: 'STOCK_WEEKLY',
-      title: 'Stock disponible par site et par semaine',
-      periods,
-      rows,
-    };
+    return { type: 'STOCK_WEEKLY', title: 'Stock disponible par site et par semaine', periods, rows };
   }
 
   // ── REQ 2 — Intrants disponibles en fin de période par plateforme ──────────
   computeEndOfPeriodStock(reports: any[]): StockResult {
-    // Keep only the last report per (site × intrant)
-    const siteSet  = new Map<string, string>();
+    const siteSet    = new Map<string, string>();
     const intrantMap = new Map<number, any>();
-    // siteId → intrantCode → latestStock
     const stockMap: Record<string, Record<number, number>> = {};
 
     const sorted = [...reports].sort(
@@ -334,9 +337,9 @@ export class SynthesisClaudeService extends SharedService {
         const code = mvt.intrant?.code;
         if (!code) return;
         if (!intrantMap.has(code)) intrantMap.set(code, mvt.intrant);
-        // only set if not already set (we sorted desc so first = latest)
         if (stockMap[site.id][code] === undefined) {
-          stockMap[site.id][code] = mvt.availableStock ?? 0;
+          const rf = Math.max(1, mvt.intrant?.roundFactor ?? 1);
+          stockMap[site.id][code] = this.roundStock(mvt.availableStock ?? 0, rf);
         }
       });
     });
@@ -346,9 +349,7 @@ export class SynthesisClaudeService extends SharedService {
 
     intrantMap.forEach((intrant, code) => {
       const siteValues: Record<string, number> = {};
-      structures.forEach(s => {
-        siteValues[s.id] = stockMap[s.id]?.[code] ?? 0;
-      });
+      structures.forEach(s => { siteValues[s.id] = stockMap[s.id]?.[code] ?? 0; });
       rows.push({
         intrantCode: code,
         intrantName: intrant.name,
@@ -371,7 +372,6 @@ export class SynthesisClaudeService extends SharedService {
     };
 
     const periods = this.extractPeriods(reports);
-    // accumulate: siteId_metricKey_period → { sum, count }
     const acc = new Map<string, { sum: number; count: number }>();
 
     reports.forEach(report => {
@@ -389,23 +389,20 @@ export class SynthesisClaudeService extends SharedService {
       });
     });
 
-    // Build rows
     const rowMap = new Map<string, ClaudeRow>();
     acc.forEach(({ sum, count }, key) => {
       const [siteId, su, period] = key.split('__');
       const rowKey = `${siteId}__${su}`;
       if (!rowMap.has(rowKey)) {
-        const site = reports.flatMap(r =>
-          r.account?.structures ?? []
-        ).find((s: any) => s.id === siteId);
+        const site = reports.flatMap(r => r.account?.structures ?? []).find((s: any) => s.id === siteId);
         rowMap.set(rowKey, {
           siteId,
-          siteName:    site?.name ?? siteId,
-          metricKey:   rowKey,
-          metricLabel: TAT_LABEL[su] ?? su,
-          group:       'TAT',
+          siteName:     site?.name ?? siteId,
+          metricKey:    rowKey,
+          metricLabel:  TAT_LABEL[su] ?? su,
+          group:        TAT_LABEL[su] ?? su,   // group = indicator for subtotals per indicator
           periodValues: this.zeroPeriods(periods),
-          total:       0,
+          total:        0,
         });
       }
       const row = rowMap.get(rowKey)!;
@@ -419,8 +416,8 @@ export class SynthesisClaudeService extends SharedService {
     });
 
     return {
-      type: 'TAT',
-      title: 'Délai moyen d\'exécution des analyses (TAT) — par site et semaine',
+      type:    'TAT',
+      title:   "Délai moyen d'exécution des analyses (TAT) — par site et semaine",
       periods,
       rows,
     };
@@ -433,7 +430,7 @@ export class SynthesisClaudeService extends SharedService {
       [SU.REJET_VL_PLASMA1]: 'VL Plasma VIH1',
       [SU.REJET_VL_PSC]:     'VL PSC',
       [SU.REJET_EID]:        'EID',
-      [SU.REJET_VL_PSC_OPP]: 'VL PSC (OPP)',
+      [SU.REJET_VL_PSC_OPP]: 'VL PSC (OPP BRUKER)',
     };
     const { periods, rows } = this.buildLabCrossTab(reports, REJET_UNITS, info => {
       const su  = info?.informationSubUnit?.id;
@@ -441,14 +438,10 @@ export class SynthesisClaudeService extends SharedService {
       if (!REJET_LABEL[su]) return null;
       const category   = REJET_LABEL[su];
       const motifLabel = ssu ? ssu.name : 'Total';
-      return {
-        key:   `${su}_${ssu?.id ?? 'total'}`,
-        label: `${category} — ${motifLabel}`,
-        group: category,
-      };
+      return { key: `${su}_${ssu?.id ?? 'total'}`, label: `${category} — ${motifLabel}`, group: category };
     });
     return {
-      type: 'REJECTIONS',
+      type:  'REJECTIONS',
       title: 'Qualité des échantillons à la réception — Rejets par catégorie',
       periods,
       rows,
@@ -463,31 +456,103 @@ export class SynthesisClaudeService extends SharedService {
       SU.RUPTURE_CONSOMMABLES, SU.PERSONNEL_ABSENT, SU.AUTRES_INCIDENTS,
     ];
     const BREAKDOWN_LABEL: Record<string, { label: string; group: string }> = {
-      [SU.RUPTURE_REACTIFS]:       { label: 'Rupture de réactifs (jours)',           group: 'Réactifs' },
-      [SU.REACTIFS_PERIMES]:       { label: 'Réactifs périmés (jours)',               group: 'Réactifs' },
-      [SU.REACTIFS_INUTILISABLES]: { label: 'Réactifs inutilisables',                group: 'Réactifs' },
-      [SU.AUTRES_REACTIFS]:        { label: 'Autres (réactifs)',                      group: 'Réactifs' },
-      [SU.PANNE_EQUIPEMENT]:       { label: 'Panne équipement (jours)',              group: 'Équipement & Infrastructure' },
-      [SU.INTERRUPTION_COURANT]:   { label: 'Interruption courant (heures/jours)',   group: 'Équipement & Infrastructure' },
-      [SU.RUPTURE_CONSOMMABLES]:   { label: 'Rupture de consommables (jours)',       group: 'Équipement & Infrastructure' },
-      [SU.PERSONNEL_ABSENT]:       { label: 'Personnel absent',                      group: 'Ressources Humaines' },
-      [SU.AUTRES_INCIDENTS]:       { label: 'Autres incidents techniques',            group: 'Ressources Humaines' },
+      [SU.RUPTURE_REACTIFS]:       { label: 'Rupture de réactifs (jours)',          group: 'Réactifs' },
+      [SU.REACTIFS_PERIMES]:       { label: 'Réactifs périmés (jours)',              group: 'Réactifs' },
+      [SU.REACTIFS_INUTILISABLES]: { label: 'Réactifs inutilisables',               group: 'Réactifs' },
+      [SU.AUTRES_REACTIFS]:        { label: 'Autres (réactifs)',                     group: 'Réactifs' },
+      [SU.PANNE_EQUIPEMENT]:       { label: 'Panne équipement (jours)',             group: 'Équipement & Infrastructure' },
+      [SU.INTERRUPTION_COURANT]:   { label: 'Interruption courant (heures/jours)',  group: 'Équipement & Infrastructure' },
+      [SU.RUPTURE_CONSOMMABLES]:   { label: 'Rupture de consommables (jours)',      group: 'Équipement & Infrastructure' },
+      [SU.PERSONNEL_ABSENT]:       { label: 'Personnel absent',                     group: 'Ressources Humaines' },
+      [SU.AUTRES_INCIDENTS]:       { label: 'Autres incidents techniques',           group: 'Ressources Humaines' },
     };
     const { periods, rows } = this.buildLabCrossTab(reports, BREAKDOWN_UNITS, info => {
-      const su = info?.informationSubUnit?.id;
+      const su   = info?.informationSubUnit?.id;
       const meta = BREAKDOWN_LABEL[su];
       if (!meta) return null;
       return { key: su, label: meta.label, group: meta.group };
     });
     return {
-      type: 'BREAKDOWNS',
+      type:  'BREAKDOWNS',
       title: 'Interruptions de service et pannes — par site et semaine',
       periods,
       rows,
     };
   }
 
-  /** Dispatch to correct compute method based on synthesis option id */
+  // ── REQ 9 — Quantité d'intrants utilisés par site et par période ──────────
+  computeIntrantsUsed(reports: any[]): ClaudeResult {
+    const periods    = this.extractPeriods(reports);
+    const siteSet    = new Map<string, string>();
+    const intrantMap = new Map<number, any>();
+    const usedMap: Record<string, Record<number, Record<string, number>>> = {};
+
+    reports.forEach(report => {
+      const site   = this.siteOf(report);
+      const period = report.period.periodName;
+      siteSet.set(site.id, site.name);
+      if (!usedMap[site.id]) usedMap[site.id] = {};
+
+      report.IntrantMvtData?.forEach((mvt: any) => {
+        const code = mvt.intrant?.code;
+        if (!code) return;
+        if (!intrantMap.has(code)) intrantMap.set(code, mvt.intrant);
+        if (!usedMap[site.id][code]) usedMap[site.id][code] = {};
+        const rf = Math.max(1, mvt.intrant?.roundFactor ?? 1);
+        usedMap[site.id][code][period] =
+          (usedMap[site.id][code][period] ?? 0) + this.roundStock(mvt.distributionStock ?? 0, rf);
+      });
+    });
+
+    const rows: ClaudeRow[] = [];
+    siteSet.forEach((siteName, siteId) => {
+      intrantMap.forEach((intrant, code) => {
+        const periodValues = this.zeroPeriods(periods);
+        if (usedMap[siteId]?.[code]) Object.assign(periodValues, usedMap[siteId][code]);
+        const total = Object.values(periodValues).reduce((s, v) => s + v, 0);
+        rows.push({
+          siteId, siteName,
+          metricKey:   `used_${siteId}_${code}`,
+          metricLabel: intrant.name,
+          metricSku:   intrant.sku ?? '',
+          group:       siteName,
+          periodValues,
+          total,
+        });
+      });
+    });
+
+    return {
+      type:  'INTRANTS_USED',
+      title: "Quantité d'intrants utilisés par site et par période",
+      periods,
+      rows,
+    };
+  }
+
+  // ── REQ 10 — Transferts d'échantillons entre sites par période ─────────────
+  computeTransfers(transactions: any[], structureIds: string[]): TransferRow[] {
+    const rows: TransferRow[] = [];
+    transactions
+      .filter(tx => structureIds.includes(String(tx.origin?.id)) || structureIds.includes(String(tx.destination?.id)))
+      .forEach(tx => {
+        tx.sanguineProductTransactions?.forEach((spt: any) => {
+          rows.push({
+            id:          tx.id,
+            date:        tx.createdAt ? new Date(tx.createdAt).toLocaleDateString('fr-FR') : '—',
+            origin:      tx.origin?.name ?? '?',
+            destination: tx.destination?.name ?? '?',
+            productName: spt.sanguineProduct?.name ?? '?',
+            quantity:    spt.quantity ?? 0,
+            approved:    tx.approved ?? false,
+            isRejected:  tx.isRejected ?? false,
+          });
+        });
+      });
+    return rows.sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  // ── DISPATCHER ──────────────────────────────────────────────────────────────
   compute(optionId: string, reports: any[]): ClaudeResult | null {
     switch (optionId) {
       case 'PENDING':         return this.computePendingSamples(reports);
@@ -497,6 +562,7 @@ export class SynthesisClaudeService extends SharedService {
       case 'TAT':             return this.computeTat(reports);
       case 'REJECTIONS':      return this.computeRejections(reports);
       case 'BREAKDOWNS':      return this.computeBreakdowns(reports);
+      case 'INTRANTS_USED':   return this.computeIntrantsUsed(reports);
       default: return null;
     }
   }
