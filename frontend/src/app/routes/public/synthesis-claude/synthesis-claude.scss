@@ -203,6 +203,22 @@
 .sc-grand-total .sc-sticky-l1,
 .sc-grand-total .sc-sticky-l2 { background: #2f75b5; }
 
+// ── Sous-total vierge (REQ 9 — séparateur visuel) ────────────────────────────
+.sc-subtotal-empty td {
+  background: #bdd7ee;
+  height: 8px;
+  padding: 0;
+}
+
+// ── Séparateur entre sites (REQ 5 — STOCK_WEEKLY) ────────────────────────────
+.sc-site-separator td {
+  background: #f0f4fa;
+  height: 10px;
+  padding: 0;
+  border-left: none;
+  border-right: none;
+}
+
 // ── Transferts ────────────────────────────────────────────────────────────────
 .sc-rejected td { background: #fff0f0; }
 

@@ -216,7 +216,7 @@
               }
 
               <!-- ══════════════════════════════════════════════════════════ -->
-              <!-- REQ 5 — STOCK_WEEKLY : pas de totaux, col SKU            -->
+              <!-- REQ 5 — STOCK_WEEKLY : pas de totaux, col SKU, séparateur entre sites -->
               <!-- ══════════════════════════════════════════════════════════ -->
               @case('STOCK_WEEKLY'){
                 <table class="sc-table">
@@ -231,7 +231,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @for(grp of uniqueGroups(result.rows); track grp){
+                    @for(grp of uniqueGroups(result.rows); track grp; let last = $last){
                       <tr class="sc-group-header">
                         <td [colSpan]="result.periods.length + 3">{{ grp }}</td>
                       </tr>
@@ -245,6 +245,12 @@
                               {{ row.periodValues[p] ?? 0 }}
                             </td>
                           }
+                        </tr>
+                      }
+                      <!-- Ligne séparatrice colorée entre les sites -->
+                      @if(!last){
+                        <tr class="sc-site-separator">
+                          <td [colSpan]="result.periods.length + 3"></td>
                         </tr>
                       }
                     }
@@ -309,7 +315,7 @@
               }
 
               <!-- ══════════════════════════════════════════════════════════ -->
-              <!-- REQ 9 — INTRANTS_USED : col SKU + totaux                 -->
+              <!-- REQ 9 — INTRANTS_USED : col SKU, sous-total vide, pas de total général -->
               <!-- ══════════════════════════════════════════════════════════ -->
               @case('INTRANTS_USED'){
                 <table class="sc-table">
@@ -342,21 +348,11 @@
                           <td class="sc-td-total" [class.sc-zero]="isZero(row.total)">{{ row.total }}</td>
                         </tr>
                       }
-                      <tr class="sc-subtotal">
-                        <td colspan="3">Sous-total — {{ grp }}</td>
-                        @for(p of result.periods; track p){
-                          <td>{{ sumForPeriod(rowsForGroup(result.rows, grp), p) }}</td>
-                        }
-                        <td>{{ grandTotal(rowsForGroup(result.rows, grp)) }}</td>
+                      <!-- Ligne sous-total vierge (séparateur visuel) -->
+                      <tr class="sc-subtotal sc-subtotal-empty">
+                        <td [colSpan]="result.periods.length + 4"></td>
                       </tr>
                     }
-                    <tr class="sc-grand-total">
-                      <td colspan="3">TOTAL GÉNÉRAL</td>
-                      @for(p of result.periods; track p){
-                        <td>{{ sumForPeriod(result.rows, p) }}</td>
-                      }
-                      <td>{{ grandTotal(result.rows) }}</td>
-                    </tr>
                   </tbody>
                 </table>
               }
@@ -454,6 +450,51 @@
                       </td>
                     }
                     <td class="sc-td-total">{{ stockTotal(row, stockResult.structures) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- REQ 11 — INTRANTS_USED_PIVOT : quantité utilisée pivot (× sites)    -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    @if(intrantsUsedPivot && !loading){
+      <mat-card class="r-0 sc-result-card">
+        <mat-card-content>
+          <div class="sc-result-header">
+            <span class="sc-title">{{ activeOption?.label }}</span>
+            <span class="sc-subtitle">{{ intrantsUsedPivot.rows.length }} intrant(s) — {{ intrantsUsedPivot.structures.length }} site(s)</span>
+            <button mat-stroked-button (click)="exportExcel()"><mat-icon>table_view</mat-icon> Excel</button>
+            <button mat-stroked-button (click)="exportPDF()"><mat-icon>picture_as_pdf</mat-icon> PDF</button>
+          </div>
+
+          <div class="sc-table-container sc-stock-end-container" #tableContainer>
+            <table class="sc-table">
+              <thead>
+                <tr>
+                  <th class="sc-th-metric sc-sticky-l1">Réactif / Consommable</th>
+                  <th class="sc-th-sku sc-sticky-l2">SKU / Unité</th>
+                  @for(s of intrantsUsedPivot.structures; track s.id){
+                    <th class="sc-th-period">{{ s.name }}</th>
+                  }
+                  <th class="sc-th-total">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for(row of intrantsUsedPivot.rows; track row.intrantCode){
+                  <tr>
+                    <td class="sc-td-metric sc-sticky-l1">{{ row.intrantName }}</td>
+                    <td class="sc-td-sku sc-sticky-l2">{{ row.intrantSku }}</td>
+                    @for(s of intrantsUsedPivot.structures; track s.id){
+                      <td class="sc-td-value" [class.sc-zero]="isZero(row.siteValues[s.id] ?? 0)">
+                        {{ row.siteValues[s.id] ?? 0 }}
+                      </td>
+                    }
+                    <td class="sc-td-total">{{ stockTotal(row, intrantsUsedPivot.structures) }}</td>
                   </tr>
                 }
               </tbody>

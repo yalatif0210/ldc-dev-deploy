@@ -552,6 +552,44 @@ export class SynthesisClaudeService extends SharedService {
     return rows.sort((a, b) => a.date.localeCompare(b.date));
   }
 
+  // ── REQ 11 — Quantité d'intrants utilisés (pivot intrant × site) ─────────
+  computeIntrantsUsedPivot(reports: any[]): StockResult {
+    const siteSet    = new Map<string, string>();
+    const intrantMap = new Map<number, any>();
+    const usedMap: Record<string, Record<number, number>> = {};
+
+    reports.forEach(report => {
+      const site = this.siteOf(report);
+      siteSet.set(site.id, site.name);
+      if (!usedMap[site.id]) usedMap[site.id] = {};
+
+      report.IntrantMvtData?.forEach((mvt: any) => {
+        const code = mvt.intrant?.code;
+        if (!code) return;
+        if (!intrantMap.has(code)) intrantMap.set(code, mvt.intrant);
+        const rf = Math.max(1, mvt.intrant?.roundFactor ?? 1);
+        usedMap[site.id][code] =
+          (usedMap[site.id][code] ?? 0) + this.roundStock(mvt.distributionStock ?? 0, rf);
+      });
+    });
+
+    const structures = [...siteSet.entries()].map(([id, name]) => ({ id, name }));
+    const rows: StockRow[] = [];
+
+    intrantMap.forEach((intrant, code) => {
+      const siteValues: Record<string, number> = {};
+      structures.forEach(s => { siteValues[s.id] = usedMap[s.id]?.[code] ?? 0; });
+      rows.push({
+        intrantCode: code,
+        intrantName: intrant.name,
+        intrantSku:  intrant.sku ?? '',
+        siteValues,
+      });
+    });
+
+    return { structures, rows };
+  }
+
   // ── DISPATCHER ──────────────────────────────────────────────────────────────
   compute(optionId: string, reports: any[]): ClaudeResult | null {
     switch (optionId) {
@@ -569,5 +607,9 @@ export class SynthesisClaudeService extends SharedService {
 
   computeStock(reports: any[]): StockResult {
     return this.computeEndOfPeriodStock(reports);
+  }
+
+  computeStockUsedPivot(reports: any[]): StockResult {
+    return this.computeIntrantsUsedPivot(reports);
   }
 }

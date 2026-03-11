@@ -38,7 +38,8 @@ export const SYNTHESIS_OPTIONS = [
   { id: 'REJECTIONS',      label: '7 — Qualité des échantillons et rejets par catégorie',      icon: 'block' },
   { id: 'BREAKDOWNS',      label: '8 — Interruptions de service et pannes',                    icon: 'build_circle' },
   { id: 'INTRANTS_USED',   label: '9 — Quantité d\'intrants utilisés par site et par période', icon: 'bar_chart' },
-  { id: 'TRANSFERS',       label: '10 — Listing des transferts d\'échantillons entre sites',   icon: 'swap_horiz' },
+  { id: 'TRANSFERS',           label: '10 — Listing des transferts d\'échantillons entre sites',         icon: 'swap_horiz' },
+  { id: 'INTRANTS_USED_PIVOT', label: '11 — Quantité d\'intrants utilisés par plateforme (pivot sites)', icon: 'bar_chart' },
 ];
 
 @Component({
@@ -80,9 +81,10 @@ export class SynthesisClaude extends FormBaseComponent implements OnInit, OnDest
   loading      = false;
   enableSubmit = true;
 
-  result:      ClaudeResult | null  = null;
-  stockResult: StockResult  | null  = null;
-  transferRows: TransferRow[] | null = null;
+  result:             ClaudeResult | null   = null;
+  stockResult:        StockResult  | null   = null;
+  intrantsUsedPivot:  StockResult  | null   = null;
+  transferRows:       TransferRow[] | null  = null;
   activeOption: typeof SYNTHESIS_OPTIONS[number] | null = null;
 
   @ViewChild('tableContainer') tableContainer!: ElementRef;
@@ -183,10 +185,11 @@ export class SynthesisClaude extends FormBaseComponent implements OnInit, OnDest
   onSubmit(): void {
     if (!this.form?.valid || !this.enableSubmit) return;
 
-    this.result      = null;
-    this.stockResult = null;
-    this.transferRows = null;
-    this.loading     = true;
+    this.result            = null;
+    this.stockResult       = null;
+    this.intrantsUsedPivot = null;
+    this.transferRows      = null;
+    this.loading           = true;
 
     const optionId = this.form.value.synthesis_option;
     this.activeOption = this.options.find(o => o.id === optionId) ?? null;
@@ -222,6 +225,8 @@ export class SynthesisClaude extends FormBaseComponent implements OnInit, OnDest
         const reports = res?.data?.reportsBySupervisedStructuresAndEquipmentWithinDateRange ?? [];
         if (optionId === 'STOCK_END') {
           this.stockResult = this.claudeService.computeStock(reports);
+        } else if (optionId === 'INTRANTS_USED_PIVOT') {
+          this.intrantsUsedPivot = this.claudeService.computeStockUsedPivot(reports);
         } else {
           this.result = this.claudeService.compute(optionId, reports);
         }
