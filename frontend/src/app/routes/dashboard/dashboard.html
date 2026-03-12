@@ -1,184 +1,376 @@
-<div class="db-toolbar">
-  <div class="db-toolbar-left">
-    <span class="db-title">
+<div class="db-page">
+
+  <!-- ── Toolbar filtres ──────────────────────────────────────────────────── -->
+  <div class="db-toolbar">
+    <div class="db-toolbar-title">
       <mat-icon>dashboard</mat-icon>
-      Tableau de bord —
-      @if (isAdmin) { <span class="db-role-badge db-role-admin">Admin</span> }
+      <span>Tableau de bord</span>
+      @if (isAdmin)           { <span class="db-role-badge db-role-admin">Admin</span> }
       @else if (isSupervisor) { <span class="db-role-badge db-role-supervisor">Superviseur</span> }
-      @else { <span class="db-role-badge db-role-user">Utilisateur</span> }
-    </span>
-  </div>
-  <div class="db-toolbar-right">
-    @if (equipmentList.length > 1) {
-      <mat-form-field appearance="outline" class="db-eq-select">
-        <mat-label>Équipement</mat-label>
-        <mat-select [(ngModel)]="selectedEquipmentId" (ngModelChange)="onEquipmentChange()">
-          @for (eq of equipmentList; track eq.id) {
-            <mat-option [value]="eq.id">{{ eq.name }}</mat-option>
+      @else                   { <span class="db-role-badge db-role-user">Utilisateur</span> }
+    </div>
+    <div class="db-toolbar-filters">
+      @if (equipmentList.length > 1) {
+        <mat-form-field appearance="outline" class="db-filter-field">
+          <mat-label>Équipement</mat-label>
+          <mat-select [(ngModel)]="selectedEquipmentId" (ngModelChange)="onEquipmentChange()">
+            @for (eq of equipmentList; track eq.id) {
+              <mat-option [value]="eq.id">{{ eq.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+      <mat-form-field appearance="outline" class="db-filter-field">
+        <mat-label>Période</mat-label>
+        <mat-select [(ngModel)]="selectedPeriod" (ngModelChange)="onPeriodChange()">
+          @for (p of allPeriods; track p.name) {
+            <mat-option [value]="p.name">{{ p.name }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
-    }
-    <button mat-icon-button (click)="loadDashboardData()" title="Actualiser">
-      <mat-icon>refresh</mat-icon>
-    </button>
-  </div>
-</div>
-
-@if (loading) {
-  <div class="db-loading">
-    <mat-spinner diameter="36"></mat-spinner>
-    <span>Chargement des données…</span>
-  </div>
-}
-
-@if (!loading && kpis) {
-
-  <!-- ── KPI CARDS ────────────────────────────────────────────────────── -->
-  <div class="db-kpi-row">
-
-    <div class="db-kpi-card db-kpi-pending">
-      <div class="db-kpi-icon"><mat-icon>hourglass_empty</mat-icon></div>
-      <div class="db-kpi-body">
-        <div class="db-kpi-value">{{ kpis.vlPending }}</div>
-        <div class="db-kpi-label">VL en attente</div>
-      </div>
+      <mat-form-field appearance="outline" class="db-filter-field">
+        <mat-label>Région</mat-label>
+        <mat-select [(ngModel)]="selectedRegion" (ngModelChange)="onRegionChange()">
+          <mat-option value="all">Toutes les régions</mat-option>
+          @for (r of regionList.slice(1); track r) {
+            <mat-option [value]="r">{{ r }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="db-filter-field">
+        <mat-label>Site</mat-label>
+        <mat-select [(ngModel)]="selectedSiteId" (ngModelChange)="onSiteChange()">
+          <mat-option value="all">Tous les sites</mat-option>
+          @for (s of siteListForRegion; track s.id) {
+            <mat-option [value]="s.id">{{ s.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <button mat-icon-button (click)="loadDashboardData()" title="Actualiser">
+        <mat-icon>refresh</mat-icon>
+      </button>
     </div>
-
-    <div class="db-kpi-card db-kpi-pending-eid">
-      <div class="db-kpi-icon"><mat-icon>hourglass_empty</mat-icon></div>
-      <div class="db-kpi-body">
-        <div class="db-kpi-value">{{ kpis.eidPending }}</div>
-        <div class="db-kpi-label">EID en attente</div>
-      </div>
-    </div>
-
-    <div class="db-kpi-card db-kpi-received">
-      <div class="db-kpi-icon"><mat-icon>science</mat-icon></div>
-      <div class="db-kpi-body">
-        <div class="db-kpi-value">{{ kpis.vlReceived }}</div>
-        <div class="db-kpi-label">VL reçus</div>
-        <div class="db-kpi-sub">{{ kpis.vlTested }} testés</div>
-      </div>
-    </div>
-
-    <div class="db-kpi-card db-kpi-received-eid">
-      <div class="db-kpi-icon"><mat-icon>science</mat-icon></div>
-      <div class="db-kpi-body">
-        <div class="db-kpi-value">{{ kpis.eidReceived }}</div>
-        <div class="db-kpi-label">EID reçus</div>
-        <div class="db-kpi-sub">{{ kpis.eidTested }} testés</div>
-      </div>
-    </div>
-
-    <div class="db-kpi-card db-kpi-tat" [style.border-left-color]="tatColor(kpis.avgTat)">
-      <div class="db-kpi-icon"><mat-icon>timer</mat-icon></div>
-      <div class="db-kpi-body">
-        <div class="db-kpi-value" [style.color]="tatColor(kpis.avgTat)">{{ kpis.avgTat }}</div>
-        <div class="db-kpi-label">TAT moyen (jours)</div>
-        <div class="db-kpi-sub">SLA : 14 j</div>
-      </div>
-    </div>
-
-    @if (isAdmin) {
-      <div class="db-kpi-card db-kpi-sites">
-        <div class="db-kpi-icon"><mat-icon>location_on</mat-icon></div>
-        <div class="db-kpi-body">
-          <div class="db-kpi-value">{{ kpis.activeSites }}</div>
-          <div class="db-kpi-label">Sites actifs</div>
-          <div class="db-kpi-sub">{{ kpis.lastPeriod }}</div>
-        </div>
-      </div>
-    } @else {
-      <div class="db-kpi-card db-kpi-rate" [style.border-left-color]="rateColor(kpis.realizationRate)">
-        <div class="db-kpi-icon"><mat-icon>percent</mat-icon></div>
-        <div class="db-kpi-body">
-          <div class="db-kpi-value" [style.color]="rateColor(kpis.realizationRate)">{{ kpis.realizationRate }}%</div>
-          <div class="db-kpi-label">Taux de réalisation</div>
-          <div class="db-kpi-sub">{{ kpis.lastPeriod }}</div>
-        </div>
-      </div>
-    }
-
   </div>
 
-  <!-- ── ALERTES STOCK ───────────────────────────────────────────────── -->
-  @if (stockAlerts.length > 0) {
-    <div class="db-section-title">
-      <mat-icon class="db-section-icon">notification_important</mat-icon>
-      Alertes stock — Couverture CMM
-    </div>
-    <div class="db-alerts-grid">
-      @for (alert of stockAlerts; track alert.intrantSku + alert.siteName) {
-        <div class="db-alert-card db-alert-{{ alert.level }}">
-          <div class="db-alert-header">
-            <mat-icon class="db-alert-icon">{{ alertIcon(alert.level) }}</mat-icon>
-            <span class="db-alert-badge db-badge-{{ alert.level }}">{{ alertLabel(alert.level) }}</span>
-            <span class="db-alert-site">{{ alert.siteName }}</span>
-          </div>
-          <div class="db-alert-body">
-            <div class="db-alert-intrant">{{ alert.intrantName }}</div>
-            @if (alert.intrantSku) {
-              <div class="db-alert-sku">SKU : {{ alert.intrantSku }}</div>
-            }
-            <div class="db-alert-metrics">
-              <span>Stock : <strong>{{ alert.availableStock }}</strong></span>
-              <span>CMM : <strong>{{ alert.cmm }}</strong></span>
-              <span class="db-coverage db-coverage-{{ alert.level }}">
-                {{ alert.coverageMonths }} mois
-              </span>
-            </div>
-          </div>
-        </div>
-      }
-    </div>
-  } @else if (!loading) {
-    <div class="db-no-alert">
-      <mat-icon>check_circle</mat-icon>
-      Aucune alerte de stock — couverture ≥ 3 mois sur tous les intrants
+  @if (loading) {
+    <div class="db-loading">
+      <mat-spinner diameter="36"></mat-spinner>
+      <span>Chargement des données…</span>
     </div>
   }
 
-  <!-- ── GRAPHIQUES ─────────────────────────────────────────────────── -->
-  <div class="db-charts-row">
+  @if (!loading && kpis) {
 
-    <!-- Activité Reçus / Testés -->
-    <div class="db-chart-card db-chart-wide">
-      <div id="chartActivity"></div>
-    </div>
-
-    <!-- Tendance en attente -->
-    <div class="db-chart-card">
-      <div id="chartTrend"></div>
-    </div>
-
-    <!-- TAT vs SLA -->
-    <div class="db-chart-card">
-      <div id="chartTat"></div>
-    </div>
-
-    <!-- Pannes / interruptions (donut) — si données -->
-    @if (hasBreakdownData) {
-      <div class="db-chart-card db-chart-small">
-        <div id="chartBreakdown"></div>
+    <!-- ── Complétude des rapports ────────────────────────────────────────── -->
+    @if (completeness) {
+      <div class="db-completeness-bar" [style.border-left-color]="completenessColor(completeness.rate)">
+        <mat-icon [style.color]="completenessColor(completeness.rate)">fact_check</mat-icon>
+        <span>Complétude — <strong>{{ selectedPeriod }}</strong> :</span>
+        <span class="db-completeness-rate" [style.color]="completenessColor(completeness.rate)">
+          {{ completeness.rate }}%
+        </span>
+        <span class="db-completeness-detail">
+          ({{ completeness.reportingCount }} / {{ completeness.totalSites }} sites ont soumis un rapport)
+        </span>
+        @if (criticalAlertCount > 0) {
+          <span class="db-alert-chip">
+            <mat-icon>warning</mat-icon>
+            {{ criticalAlertCount }} alerte(s) critique(s)
+          </span>
+        }
       </div>
     }
 
-    <!-- Taux de réalisation (radialBar) — user seulement -->
-    @if (!isAdmin) {
-      <div class="db-chart-card db-chart-small">
-        <div id="chartRealization"></div>
+    <!-- ── KPI CARDS ──────────────────────────────────────────────────────── -->
+    <div class="db-kpi-row">
+
+      <div class="db-kpi-card db-kpi-pending">
+        <div class="db-kpi-icon"><mat-icon>hourglass_empty</mat-icon></div>
+        <div class="db-kpi-body">
+          <div class="db-kpi-value">{{ kpis.vlPending }}</div>
+          <div class="db-kpi-label">VL en attente</div>
+        </div>
+        @if (kpis.vlDetails.length > 0) {
+          <div class="db-kpi-popup">
+            <div class="db-popup-title">Détail VL en attente</div>
+            @for (d of kpis.vlDetails; track d.sampleType) {
+              <div class="db-popup-row">
+                <span class="db-popup-type">{{ d.sampleType }}</span>
+                <span class="db-popup-val">{{ d.pending }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="db-kpi-card db-kpi-pending-eid">
+        <div class="db-kpi-icon"><mat-icon>hourglass_empty</mat-icon></div>
+        <div class="db-kpi-body">
+          <div class="db-kpi-value">{{ kpis.eidPending }}</div>
+          <div class="db-kpi-label">EID en attente</div>
+        </div>
+      </div>
+
+      <div class="db-kpi-card db-kpi-received">
+        <div class="db-kpi-icon"><mat-icon>science</mat-icon></div>
+        <div class="db-kpi-body">
+          <div class="db-kpi-value">{{ kpis.vlReceived }}</div>
+          <div class="db-kpi-label">VL reçus</div>
+          <div class="db-kpi-sub">{{ kpis.vlTested }} testés</div>
+        </div>
+        @if (kpis.vlDetails.length > 0) {
+          <div class="db-kpi-popup">
+            <div class="db-popup-title">Détail VL par type</div>
+            <div class="db-popup-header-row">
+              <span></span><span>Reçus</span><span>Testés</span>
+            </div>
+            @for (d of kpis.vlDetails; track d.sampleType) {
+              <div class="db-popup-row">
+                <span class="db-popup-type">{{ d.sampleType }}</span>
+                <span class="db-popup-val">{{ d.received }}</span>
+                <span class="db-popup-val">{{ d.tested }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="db-kpi-card db-kpi-received-eid">
+        <div class="db-kpi-icon"><mat-icon>science</mat-icon></div>
+        <div class="db-kpi-body">
+          <div class="db-kpi-value">{{ kpis.eidReceived }}</div>
+          <div class="db-kpi-label">EID reçus</div>
+          <div class="db-kpi-sub">{{ kpis.eidTested }} testés</div>
+        </div>
+        @if (kpis.eidDetails.length > 0) {
+          <div class="db-kpi-popup">
+            <div class="db-popup-title">Détail EID</div>
+            <div class="db-popup-header-row">
+              <span></span><span>Reçus</span><span>Testés</span>
+            </div>
+            @for (d of kpis.eidDetails; track d.sampleType) {
+              <div class="db-popup-row">
+                <span class="db-popup-type">{{ d.sampleType }}</span>
+                <span class="db-popup-val">{{ d.received }}</span>
+                <span class="db-popup-val">{{ d.tested }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="db-kpi-card db-kpi-tat" [style.border-left-color]="tatColor(kpis.avgTat)">
+        <div class="db-kpi-icon"><mat-icon>timer</mat-icon></div>
+        <div class="db-kpi-body">
+          <div class="db-kpi-value" [style.color]="tatColor(kpis.avgTat)">{{ kpis.avgTat }}</div>
+          <div class="db-kpi-label">TAT moyen (jours)</div>
+          <div class="db-kpi-sub">SLA : 10 j</div>
+        </div>
+      </div>
+
+      @if (isAdmin) {
+        <div class="db-kpi-card db-kpi-sites">
+          <div class="db-kpi-icon"><mat-icon>location_on</mat-icon></div>
+          <div class="db-kpi-body">
+            <div class="db-kpi-value">{{ kpis.activeSites }}</div>
+            <div class="db-kpi-label">Sites actifs</div>
+            <div class="db-kpi-sub">{{ kpis.lastPeriod }}</div>
+          </div>
+        </div>
+      } @else {
+        <div class="db-kpi-card db-kpi-rate" [style.border-left-color]="rateColor(kpis.realizationRate)">
+          <div class="db-kpi-icon"><mat-icon>percent</mat-icon></div>
+          <div class="db-kpi-body">
+            <div class="db-kpi-value" [style.color]="rateColor(kpis.realizationRate)">
+              {{ kpis.realizationRate }}%
+            </div>
+            <div class="db-kpi-label">Taux de réalisation</div>
+            <div class="db-kpi-sub">{{ kpis.lastPeriod }}</div>
+          </div>
+        </div>
+      }
+
+    </div>
+
+    <!-- ── Alertes stock — Couverture MSD ────────────────────────────────── -->
+    @if (stockAlerts.length > 0) {
+      <div class="db-section-title">
+        <mat-icon class="db-section-icon">notification_important</mat-icon>
+        Alertes stock — Couverture MSD
+      </div>
+      <div class="db-alerts-grid">
+        @for (alert of stockAlerts; track alert.intrantSku + alert.siteName) {
+          <div class="db-alert-card db-alert-{{ alert.level }}">
+            <div class="db-alert-header">
+              <mat-icon class="db-alert-icon">{{ alertIcon(alert.level) }}</mat-icon>
+              <span class="db-alert-badge db-badge-{{ alert.level }}">{{ alertLabel(alert.level) }}</span>
+              <span class="db-alert-site">{{ alert.siteName }}</span>
+            </div>
+            <div class="db-alert-body">
+              <div class="db-alert-intrant">{{ alert.intrantName }}</div>
+              @if (alert.intrantSku) {
+                <div class="db-alert-sku">SKU : {{ alert.intrantSku }}</div>
+              }
+              <div class="db-alert-metrics">
+                <span>Stock : <strong>{{ alert.availableStock }}</strong></span>
+                <span>CMM : <strong>{{ alert.cmm }}</strong></span>
+                <span class="db-coverage db-coverage-{{ alert.level }}">MSD : {{ alert.msd }} m</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="db-no-alert">
+        <mat-icon>check_circle</mat-icon>
+        Aucune alerte — couverture MSD entre 3 et 6 mois sur tous les intrants
       </div>
     }
 
-  </div>
+    <!-- ── GRAPHIQUES ─────────────────────────────────────────────────────── -->
+    <div class="db-charts-row">
 
-}
+      <!-- Activité Reçus / Testés -->
+      <div class="db-chart-card db-chart-wide">
+        <div class="db-chart-header">
+          <span class="db-chart-header-label">Activité Reçus / Testés</span>
+          <mat-form-field appearance="outline" class="db-chart-period-select">
+            <mat-label>Période</mat-label>
+            <mat-select [(ngModel)]="activityPeriod" (ngModelChange)="onActivityPeriodChange()">
+              @for (p of allPeriods; track p.name) {
+                <mat-option [value]="p.name">{{ p.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div id="chartActivity"></div>
+      </div>
 
-@if (!loading && !kpis) {
-  <div class="db-empty">
-    <mat-icon>bar_chart</mat-icon>
-    <p>Aucune donnée disponible pour cette période.</p>
-    <p>Sélectionnez un équipement et vérifiez que des rapports ont été finalisés.</p>
-  </div>
-}
+      <!-- Tendance en attente -->
+      <div class="db-chart-card">
+        <div class="db-chart-header">
+          <span class="db-chart-header-label">Tendance en attente</span>
+          <div class="db-chart-range">
+            <mat-form-field appearance="outline" class="db-chart-period-select">
+              <mat-label>De</mat-label>
+              <mat-select [(ngModel)]="trendStart" (ngModelChange)="onTrendRangeChange()">
+                @for (p of allPeriods; track p.name) {
+                  <mat-option [value]="p.name">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="db-chart-period-select">
+              <mat-label>À</mat-label>
+              <mat-select [(ngModel)]="trendEnd" (ngModelChange)="onTrendRangeChange()">
+                @for (p of allPeriods; track p.name) {
+                  <mat-option [value]="p.name">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+        <div id="chartTrend"></div>
+      </div>
+
+      <!-- TAT vs SLA 10j -->
+      <div class="db-chart-card">
+        <div class="db-chart-header">
+          <span class="db-chart-header-label">TAT vs SLA 10j</span>
+          <div class="db-chart-range">
+            <mat-form-field appearance="outline" class="db-chart-period-select">
+              <mat-label>De</mat-label>
+              <mat-select [(ngModel)]="tatStart" (ngModelChange)="onTatRangeChange()">
+                @for (p of allPeriods; track p.name) {
+                  <mat-option [value]="p.name">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="db-chart-period-select">
+              <mat-label>À</mat-label>
+              <mat-select [(ngModel)]="tatEnd" (ngModelChange)="onTatRangeChange()">
+                @for (p of allPeriods; track p.name) {
+                  <mat-option [value]="p.name">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+        <div id="chartTat"></div>
+      </div>
+
+      <!-- Testés vs Pending Retest -->
+      <div class="db-chart-card">
+        <div class="db-chart-header">
+          <span class="db-chart-header-label">Testés vs Pending Retest</span>
+          <div class="db-chart-range">
+            <mat-form-field appearance="outline" class="db-chart-period-select">
+              <mat-label>De</mat-label>
+              <mat-select [(ngModel)]="retestStart" (ngModelChange)="onRetestRangeChange()">
+                @for (p of allPeriods; track p.name) {
+                  <mat-option [value]="p.name">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="db-chart-period-select">
+              <mat-label>À</mat-label>
+              <mat-select [(ngModel)]="retestEnd" (ngModelChange)="onRetestRangeChange()">
+                @for (p of allPeriods; track p.name) {
+                  <mat-option [value]="p.name">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+        <div id="chartRetest"></div>
+      </div>
+
+      <!-- Testés vs À rejeter -->
+      <div class="db-chart-card">
+        <div class="db-chart-header">
+          <span class="db-chart-header-label">Testés vs À rejeter</span>
+          <div class="db-chart-range">
+            <mat-form-field appearance="outline" class="db-chart-period-select">
+              <mat-label>De</mat-label>
+              <mat-select [(ngModel)]="rejectStart" (ngModelChange)="onRejectRangeChange()">
+                @for (p of allPeriods; track p.name) {
+                  <mat-option [value]="p.name">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="db-chart-period-select">
+              <mat-label>À</mat-label>
+              <mat-select [(ngModel)]="rejectEnd" (ngModelChange)="onRejectRangeChange()">
+                @for (p of allPeriods; track p.name) {
+                  <mat-option [value]="p.name">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+        <div id="chartReject"></div>
+      </div>
+
+      @if (hasBreakdownData) {
+        <div class="db-chart-card db-chart-small">
+          <div id="chartBreakdown"></div>
+        </div>
+      }
+
+      @if (!isAdmin) {
+        <div class="db-chart-card db-chart-small">
+          <div id="chartRealization"></div>
+        </div>
+      }
+
+    </div>
+  }
+
+  @if (!loading && !kpis) {
+    <div class="db-empty">
+      <mat-icon>bar_chart</mat-icon>
+      <p>Aucune donnée disponible pour cette sélection.</p>
+      <p>Vérifiez que des rapports ont été approuvés pour la période et l'équipement sélectionnés.</p>
+    </div>
+  }
+
+</div>
