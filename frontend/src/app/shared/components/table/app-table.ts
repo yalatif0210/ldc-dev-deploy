@@ -26,6 +26,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { FormBaseComponent } from '../base-component/form-base';
 import { Router } from '@angular/router';
+import { UserManagementService } from '@shared/services/user-management.service';
 
 // Register required modules globally, before any grids are instantiated
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -171,9 +172,10 @@ export class AppTable implements OnInit, OnDestroy {
 export class ManageUsersDialog implements OnInit {
   public data: any = inject(MAT_DIALOG_DATA);
   public dialogRef = inject(MatDialogRef<ManageUsersDialog>);
+  private readonly service = inject(UserManagementService);
   //public formBaseComponent = inject(FormBaseComponent);
   form: FormGroup | undefined;
-  enabledSubmit = false;
+  isSubmitted = false;
   constructor() {
     this.form = new FormGroup({
       name: new FormControl({ value: this.data?.user?.name, disabled: false }),
@@ -186,6 +188,28 @@ export class ManageUsersDialog implements OnInit {
   ngOnInit(): void {}
 
   onConfirm() {
-    this.dialogRef.close('');
+    if (this.isSubmitted || !this.form) return;
+    this.isSubmitted = true;
+
+    const password = this.form.get('password')?.value;
+    const payload: { name?: string; username?: string; phone?: string; password?: string } = {
+      name:     this.form.get('name')?.value     || undefined,
+      username: this.form.get('username')?.value || undefined,
+      phone:    this.form.get('phone')?.value    || undefined,
+    };
+    if (password && password.trim().length > 0) {
+      payload.password = password;
+    }
+
+    this.service.updateUser(this.data.user.id, payload).subscribe({
+      next: () => {
+        this.form!.reset();
+        this.isSubmitted = false;
+        this.dialogRef.close('updated');
+      },
+      error: () => {
+        this.isSubmitted = false;
+      },
+    });
   }
 }

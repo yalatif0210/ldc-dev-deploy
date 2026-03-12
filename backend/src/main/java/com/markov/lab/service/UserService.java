@@ -4,6 +4,7 @@ import com.markov.lab.controller.dto.SignupRequest;
 import com.markov.lab.entity.Account;
 import com.markov.lab.entity.Structure;
 import com.markov.lab.entity.User;
+import com.markov.lab.input.UserInput;
 
 import com.markov.lab.repository.RoleRepository;
 import com.markov.lab.repository.StructureRepository;
@@ -28,6 +29,18 @@ public class UserService {
         this.structureRepository = structureRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    @Transactional
+    public User update(Long id, UserInput input) {
+        return repository.findById(id).map(user -> {
+            if (input.getName() != null)     user.setName(input.getName());
+            if (input.getUsername() != null) user.setUsername(input.getUsername());
+            if (input.getPhone() != null)    user.setPhone(input.getPhone());
+            if (input.getPassword() != null && !input.getPassword().isBlank())
+                user.setPassword(passwordEncoder.encode(input.getPassword()));
+            return repository.save(user);
+        }).orElse(null);
     }
 
     @Transactional

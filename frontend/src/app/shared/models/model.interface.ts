@@ -27,6 +27,7 @@ export interface DistrictInterface {
 }
 
 export interface UserInterface {
+  id?: string;
   name?: string;
   username?: string;
   phone?: string;

@@ -5,6 +5,7 @@ import { Cacheable, LocalStorageStrategy } from 'ts-cacheable';
 import { AccountInterface } from '../models/model.interface';
 import { forkJoin, Observable, Subject } from 'rxjs';
 import AccountModel from '../models/account.model';
+import UserModel from '../models/user.model';
 import { filterObject } from '@core/authentication/helpers';
 
 export interface AccountList {
@@ -50,7 +51,7 @@ export class UserManagementService extends SharedService {
     accountsList.map((account: AccountInterface, index: number) => {
       if (!for_management) {
         result.push({
-          id: index + 1,
+          id: (account && account!.user!.id!) || '',
           name: (account && account!.user!.name!) || '',
           username: (account && account!.user!.username!) || '',
           phone: (account && account!.user!.phone!) || '',
@@ -60,7 +61,7 @@ export class UserManagementService extends SharedService {
         });
       } else {
         result.push({
-          id: index + 1,
+          id: (account && account!.user!.id!) || '',
           name: (account && account!.user!.name!) || '',
           username: (account && account!.user!.username!) || '',
           phone: (account && account!.user!.phone!) || '',
@@ -76,5 +77,9 @@ export class UserManagementService extends SharedService {
 
   getCreatedUser() {
     return this.new_user;
+  }
+
+  updateUser(id: number, userInput: { name?: string; username?: string; phone?: string; password?: string }): Observable<any> {
+    return this.mutation(UserModel.updateUser(), { id, userInput });
   }
 }

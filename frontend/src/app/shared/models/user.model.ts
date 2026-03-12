@@ -24,6 +24,19 @@ class UserModel extends ModelBase {
       }
       `;
   }
+
+  static updateUser() {
+    return `
+      mutation ($id: ID, $userInput: UserInput) {
+        updateUser(id: $id, userInput: $userInput) {
+          id
+          name
+          username
+          phone
+        }
+      }
+    `;
+  }
 }
 
 export default UserModel;

@@ -38,13 +38,7 @@ class UserController {
 
     @MutationMapping
     private User updateUser(@Argument Long id, @Argument UserInput userInput) {
-        return userRepository.findById(id)
-                .map( existinguser -> {
-                    existinguser.setUsername(userInput.getUsername());
-                    existinguser.setPassword(userInput.getPassword());
-                    return userRepository.save(existinguser);
-                })
-                .orElse(null);
+        return userService.update(id, userInput);
     }
 
     @MutationMapping
