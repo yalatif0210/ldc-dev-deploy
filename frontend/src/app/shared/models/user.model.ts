@@ -25,8 +25,7 @@ class UserModel extends ModelBase {
       `;
   }
 
-  static updateUser() {
-    return `
+  static updateUser= `
       mutation ($id: ID, $userInput: UserInput) {
         updateUser(id: $id, userInput: $userInput) {
           id
@@ -36,7 +35,6 @@ class UserModel extends ModelBase {
         }
       }
     `;
-  }
 }
 
 export default UserModel;

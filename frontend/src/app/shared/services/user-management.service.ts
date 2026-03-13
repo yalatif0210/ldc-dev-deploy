@@ -80,6 +80,6 @@ export class UserManagementService extends SharedService {
   }
 
   updateUser(id: number, userInput: { name?: string; username?: string; phone?: string; password?: string }): Observable<any> {
-    return this.mutation(UserModel.updateUser(), { id, userInput });
+    return this.query(UserModel.updateUser, { id, userInput });
   }
 }

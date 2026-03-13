@@ -40,6 +40,7 @@ class UserController {
     private User updateUser(@Argument Long id, @Argument UserInput userInput) {
         return userService.update(id, userInput);
     }
+    
 
     @MutationMapping
     private Boolean deleteUser(@Argument Long id) {

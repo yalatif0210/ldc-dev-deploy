@@ -19,6 +19,7 @@ class ReportModel {
     }
   }`;
 
+
   static reportByAccountAndEquipmentAndPeriodAlso = `query ($request: ReportByEquipmentAccountPeriodInput) {
     reportByAccountAndEquipmentAndPeriodAlso(request: $request) {
       id
